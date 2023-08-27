@@ -1,0 +1,24 @@
+.sidebar-container {
+  height: 100vh;
+  box-shadow: 1px 2px 2px #eee;
+
+  .header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  section {
+    div {
+      font-weight: 500;
+      color: rgba(255, 127, 44, 1);
+      margin: 2px 0;
+      padding: 5px;
+      border-radius: 5px;
+    }
+    .active {
+      background-color: rgba(255, 127, 44, 0.3);
+    }
+  }
+}
+
+// rgba(255, 127, 44, 1)

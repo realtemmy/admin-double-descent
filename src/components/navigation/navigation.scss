@@ -1,0 +1,30 @@
+.navigation-container{
+    box-shadow: 1px 1px 0 #eee;
+    nav{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 7px 14px;
+
+        .search{
+            input{
+                outline: none;
+                width: 300px;
+            }
+            .button{
+                border: none;
+                background-color: rgba(255, 127, 44, 1);
+                color: #fff;
+                padding: 3px 10px;
+                margin-left: 5px;
+                border-radius: 5px;
+            }
+        }
+        .nav-info{
+            display: flex;
+            div{
+                margin: 0 3px;
+            }
+        }
+    }
+}
