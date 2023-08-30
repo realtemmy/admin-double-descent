@@ -1,38 +1,54 @@
 import { useState } from "react";
 
+import CreateCategory from "../../components/create-category/create-category";
+
 import "./category.scss";
 
 const Categories = () => {
-    const [name, setName] = useState("");
-    const [image, setImage] = useState("");
   // Here should be get all categories, would change later
-  // requirements -> name, image
-  const handleSubmit = (e) =>{
-    e.preventDefault();
-    console.log(e.target.value);
-  }
-  console.log(name, image);
+  // requirements -> name, image, date
+  // section -> name, category
+  // Create modal
+  const [createCategory, setCreateCategory] = useState(false);
+
+  const handleDeleteCategory = ({ category }) => {
+    console.log(category);
+  };
   return (
     <div className="categories-container">
       <div className="container">
-        <h4>Create Category</h4>
-        <form className="form" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="name">Category name:</label>
-            <br />
-            <input type="text" name="name" id="name" required onChange={(e) => setName(e.target.value)}/>
-          </div>
-          <div>
-            <label htmlFor="image">Image</label>
-            <br />
-            <input type="file" name="image" id="image" required onChange={(e) => setImage(e.target.files[0])} />
-            <div className="upload">
-              <span>^</span>
-              <div>upload</div>
+        <div className="d-flex justify-content-between align-items-center">
+          <h3>Categories</h3>
+          <button className="btn btn-primary">
+            <i className="fa fa-plus"></i> Category
+          </button>
+        </div>
+        <div className="content">
+          <header className="row">
+            <div className="col-3">Image</div>
+            <div className="col-4">Category name</div>
+            <div className="col-3">Created At</div>
+          </header>
+          <section className="row align-items-center">
+            <div className="col-3 image">
+              <img
+                src={require("./../../assets/dano.jpg")}
+                alt="category-img"
+                className="img"
+              />
             </div>
-          </div>
-          <button className="btn btn-primary my-2">Submit</button>
-        </form>
+            <div className="col-4 name">Provisions</div>
+            <div className="col-3 date">28/08/2023</div>
+            <div className="col-2 icons">
+              <div className="edit">
+                <i className="fa fa-edit"></i>
+              </div>
+              <div className="delete" onClick={handleDeleteCategory}>
+                <i className="fa fa-trash"></i>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );

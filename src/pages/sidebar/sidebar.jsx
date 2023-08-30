@@ -8,7 +8,9 @@ const Sidebar = () => {
         <div className="container">
           <div className="header">
             <div className="logo">Double Descent</div>
-            <div className="hamburger">=</div>
+            <div className="hamburger">
+              <i className="fa-solid fa-bars"></i>
+            </div>
           </div>
           <section>
             <div className="dashboard active">
