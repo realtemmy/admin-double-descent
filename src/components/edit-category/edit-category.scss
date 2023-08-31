@@ -1,5 +1,5 @@
-.create-category-container {
-  background-color: rgb(128, 128, 128, 0.5);
+.edit-category-container{
+//   background-color: rgb(128, 128, 128, 0.5);
   .container {
     display: flex;
     flex-direction: column;
@@ -30,6 +30,11 @@
           opacity: 0;
           cursor: pointer;
         }
+        .img{
+            height: 80px;
+            margin-left: 10px;
+            border-radius: 10px;
+        }
         .upload {
           background-color: rgb(128, 128, 128, 0.3);
           border-radius: 10px;
@@ -44,9 +49,6 @@
             padding: 0;
             margin: 0;
           }
-          // button{
-          //   margin-top: 2rem;
-          // }
         }
       }
     }

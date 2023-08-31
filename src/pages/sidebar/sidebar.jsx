@@ -23,7 +23,7 @@ const Sidebar = () => {
               <Link to="/category" className="nav-link">Categories</Link>
             </div>
             <div className="section">
-              <Link className="nav-link">Sections</Link>
+              <Link to="/section" className="nav-link">Sections</Link>
             </div>
             <div className="product">
               <Link className="nav-link">Products</Link>

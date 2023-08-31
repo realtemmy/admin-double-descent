@@ -27,7 +27,7 @@ const CreateCategory = () => {
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-          <div>
+          <div className='form-info'>
             <label htmlFor="image">Image</label>
             <br />
             <input
@@ -38,7 +38,7 @@ const CreateCategory = () => {
               onChange={(e) => setImage(e.target.files[0])}
             />
             <div className="upload">
-              <span>^</span>
+              <span><i className="fa fa-upload"></i></span>
               <div>upload</div>
             </div>
           </div>

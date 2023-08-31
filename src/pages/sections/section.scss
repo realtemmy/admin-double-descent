@@ -1,4 +1,4 @@
-.categories-container {
+.sections-container {
   margin: 1rem 0;
   position: relative;
   .content {
@@ -7,18 +7,11 @@
       font-weight: 500;
       border-bottom: 1px solid #ccc;
     }
-    section {
+     section {
       border-top: 1px solid #eee;
       padding: 3px 0;
       &:last-child{
         border-bottom: 1px solid #eee;
-      }
-      .image {
-        .img {
-          width: 50px;
-          object-fit: cover;
-          object-position: center center;
-        }
       }
       .icons {
         display: flex;
