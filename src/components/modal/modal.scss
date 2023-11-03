@@ -1,0 +1,65 @@
+.modal-container {
+  margin: 0;
+  padding: 0;
+  background-color: rgb(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100vw;
+  z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  .content {
+    padding: 1rem;
+    font-size: 16px;
+    background-color: #fff;
+
+    .message{
+      text-align: center;
+    }
+
+    .btn-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 10px 0;
+
+      button {
+        border: 1px solid;
+        border-radius: 3px;
+        padding: 3px 10px;
+        text-transform: capitalize;
+        color: #fff;
+        margin: 5px;
+
+        // &:hover {
+        //   box-shadow: 1px 1px 3px #ccc;
+        //   transition: transform;
+        // }
+
+        &:hover {
+          transform: translateY(-1px);
+          transition: transform 0.2s ease-in;
+          // box-shadow: 2px 2px 5px #393636;
+          box-shadow: 2px 2px 5px #bdbbbb;
+        }
+        &:active {
+          transform: translateY(0);
+          transition: transform 0.2s ease-in;
+          box-shadow: 1px 1px 5px #bdbbbb;
+        }
+      }
+      .cancel {
+        border-color: red;
+        background-color: red;
+      }
+      .confirm {
+        border-color: green;
+        background-color: green;
+      }
+    }
+  }
+}

@@ -1,0 +1,76 @@
+.products-container{
+    margin: 1rem 0;
+    header{
+        margin: 10px 1rem;
+        .form{
+            display: flex;
+            input{
+                width: 400px;
+                margin-right: 10px;
+                outline: none;
+            }
+        }
+    }
+    .content{
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin: 0 1rem;
+        section{
+            display: flex;
+            // align-items: center;
+            flex-direction: column;
+            width: fit-content;
+            border: 1px solid #ccc;
+            padding: 10px 15px;
+            border-radius: 5px;
+            .image{
+                margin: 10px 0;
+                .img{
+                    width: 150px;
+                    height: 150px;
+                    object-fit: contain;
+                    object-position: center center;
+                }
+            }
+            .product-details{
+                .name{
+                    color: rgb(0, 0, 0, .8);
+                    text-transform: capitalize;
+                }
+                .price{
+                    font-weight: bold;
+                }
+                .btn-container{
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: baseline;
+                    margin: 10px 0;
+                    button{
+                        border: 1px solid #ccc;
+                        border-radius: 5px;
+                        background-color: #fff;
+                        display: flex;
+                        align-items: center;
+                        padding: 5px 8px;
+                        text-transform: capitalize;
+                        font-weight: 500;
+                        font-size: 14px;
+                        i{
+                            margin: 0 2px;
+                        }
+                    }
+                    .edit{
+                        i{
+                             color: rgba(255, 127, 44, 1);
+                        }
+                        
+                    }
+                    .delete{
+                        color: red;
+                    }
+                }
+            }
+        }
+    }
+}

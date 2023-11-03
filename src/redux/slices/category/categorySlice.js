@@ -4,7 +4,7 @@ const url = `${process.env.REACT_APP_SERVER_HOST}/category`;
 
 const initialState = {
   categories: [],
-  categoryId:"",
+  categoryId: "",
   isLoading: true,
 };
 
@@ -19,14 +19,22 @@ const categorySlice = createSlice({
   name: "categories",
   initialState,
   reducers: {
-    setCategory: (state, action) =>{
+    setCategory: (state, action) => {
       console.log(action.payload);
-      state.categories = action.payload
+      state.categories = action.payload;
     },
-    setCategoryId: (state, action) =>{
+    setCategoryId: (state, action) => {
       // console.log(action.payload);
-      state.categoryId = action.payload
-    }
+      state.categoryId = action.payload;
+    },
+    createdCategory: (state, action) => {
+      state.categories.push(action.payload);
+    },
+    deletedCategory: (state, action) => {
+      state.categories = state.categories.filter(
+        (category) => category._id !== action.payload
+      );
+    },
   },
   extraReducers: {
     [getCategories.pending]: (state) => {
@@ -42,7 +50,8 @@ const categorySlice = createSlice({
   },
 });
 
-export const { setCategoryId } = categorySlice.actions
+export const { setCategory, setCategoryId, createdCategory, deletedCategory } =
+  categorySlice.actions;
 
 export const getAllCategories = (state) => state.category.categories;
 

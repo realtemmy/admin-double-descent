@@ -1,0 +1,92 @@
+.register {
+  .container {
+    .logo {
+      font-size: 1rem;
+    }
+
+    .form {
+      border: 1px solid #eee;
+      border-radius: 5px;
+      box-shadow: 1px 1px 4px #ccc;
+      padding: 3.5rem 0;
+      min-width: 250px;
+      max-width: 500px;
+      margin: 3rem auto;
+      .extra-text{
+        width: 80%;
+        margin: 0 auto;
+        color: #545353;
+      }
+      h2 {
+        text-align: center;
+      }
+      .form-container {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        div {
+          font-size: 0.9rem;
+          font-weight: 600;
+          padding: 0.3rem 0;
+          width: 80%;
+          // margin: 0 auto;
+        }
+
+        input {
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          padding: 0.5rem 0.7rem;
+          outline: none;
+        }
+        .name,
+        .email,
+        .password,
+        .confirmPassword {
+          width: 95%;
+        }
+        .error {
+          font-size: 0.8rem;
+          label {
+            color: red;
+          }
+          p {
+            display: block;
+            color: red;
+          }
+        }
+        .err {
+          color: red;
+        }
+        .none {
+          display: none;
+        }
+        .button {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+
+          i {
+            color: rgba(255, 127, 44, 1);
+          }
+        }
+      }
+      .line {
+        border-bottom: 1px solid rgba(130, 130, 130, 1);
+        width: 80%;
+        margin: 1rem auto;
+        // display: flex;
+      }
+      .bottom-text{
+        text-align: center;
+        .link{
+            text-decoration: none;
+            color: rgba(250, 98, 0, 1);
+        }
+      }
+    }
+  }
+}

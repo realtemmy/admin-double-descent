@@ -1,0 +1,78 @@
+.edit-product-container {
+  background-color: #eee;
+  line-height: 1.8;
+  height: 100vh;
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    min-height: 100vh;
+    .form {
+      width: 400px;
+      border-radius: 5px;
+      padding: 10px 20px;
+      background-color: #fff;
+      input,
+      .text-area,
+      select {
+        width: 100%;
+        outline: none;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        padding: 2px 4px;
+      }
+      .text-area {
+        height: 70px;
+      }
+      .image-upload {
+        height: 100px;
+        position: relative;
+        margin-bottom: 1rem;
+        #image {
+          width: 100px;
+          position: absolute;
+          top: 3.3rem;
+          opacity: 0;
+          cursor: pointer;
+        }
+        .img {
+          height: 80px;
+          margin-left: 10px;
+          border-radius: 10px;
+        }
+        .upload {
+          background-color: rgb(128, 128, 128, 0.3);
+          border-radius: 10px;
+          margin: 5px 0;
+          width: 100px;
+          height: 80px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+      .select-container {
+        display: flex;
+        .category,
+        .section {
+          width: 100%;
+        }
+        .category {
+          margin-right: 10px;
+        }
+        select,
+        option {
+          padding: 4px 0;
+        }
+      }
+      #price {
+        width: 100px;
+      }
+      #featured {
+        padding: 4px;
+      }
+    }
+  }
+}

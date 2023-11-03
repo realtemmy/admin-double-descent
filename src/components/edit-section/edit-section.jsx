@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { getDocument } from "../../helperFunctions";
+
 import "./edit-section.scss";
 
 const EditSection = () => {
@@ -7,27 +9,32 @@ const EditSection = () => {
   const sectionId = useSelector((state) => state.section.sectionId);
   const categories = useSelector((state) => state.category.categories);
 
+  const defaultSectionField = {
+    name:"",
+    category:""
+  }
+
   // console.log(sections, sectionId);
-  const [section, setSection] = useState({});
+  const [section, setSection] = useState(defaultSectionField);
   const [isLoading, setIsLoading] = useState(true);
+  
   useEffect(() => {
     const section = sections.find((section) => section._id === sectionId);
     setSection(section);
     setIsLoading(false);
   }, [sectionId, sections]);
 
-  const getCategory = (categoryId) => {
-    const doc = categories.find((category) => category._id === categoryId);
-    return doc.name;
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSection({ ...section, [name]: value });
+    console.log(section);
   };
+    // console.log(section);
 
-  const handleSubmit =async (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(section);
     try {
       const res = await fetch(
         `${process.env.REACT_APP_SERVER_HOST}/sections/${section._id}`,
@@ -43,10 +50,11 @@ const EditSection = () => {
       );
       const data = await res.json();
       console.log(data);
+      // setSection
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
   // console.log(sectionId);
   // console.log(section);
@@ -69,12 +77,14 @@ const EditSection = () => {
             </div>
             <div className="my-2">
               <label htmlFor="categories">Choose category</label>
-              <select name="categories">
+              <select name="category" onChange={handleChange}>
                 <option defaultValue={section._id}>
-                  {getCategory(section.category)}
+                  {getDocument(categories, section.category).name}
                 </option>
                 {categories.map((category, idx) => (
-                  <option value={category._id} key={idx}>{category.name}</option>
+                  <option value={category._id} key={idx}>
+                    {category.name}
+                  </option>
                 ))}
               </select>
             </div>

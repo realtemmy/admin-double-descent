@@ -1,73 +1,111 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { Button } from "@material-tailwind/react";
 
-import { setCategoryId } from "../../redux/slices/category/categorySlice";
+import {
+  setCategoryId,
+  deletedCategory,
+} from "../../redux/slices/category/categorySlice";
+import Modal from "../../components/modal/modal";
 
 import "./category.scss";
+import { toast } from "react-toastify";
 
 const Categories = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  // Here should be get all categories, would change later
-  // requirements -> name, image, date
-  // section -> name, category
-  // Create modal
+
+  const [modal, setModal] = useState(false);
+  const [catId, setCatId] = useState("");
 
   const categories = useSelector((state) => state.category.categories);
 
   const handleEditCategory = (categoryId) => {
-    // console.log(categoryId);
     dispatch(setCategoryId(categoryId));
     navigate("/category/edit-category");
   };
 
-  const handleDeleteCategory = async (categoryId) => {
-    const res = await fetch(
-      `${process.env.REACT_APP_SERVER_HOST}/category/${categoryId}`,
-      {
-        method: "DELETE",
+  const handleDeleteCategory = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_SERVER_HOST}/category/${catId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("admin-token"),
+          },
+        }
+      );
+      if (res.ok) {
+        // remove from redux
+        dispatch(deletedCategory(catId));
+        toast.success("Category deleted successfully.");
+        return;
       }
-    );
-    console.log(await res.json());
+      toast.error("There was a problem deleting category.");
+    } catch (error) {
+      console.log(error);
+      toast.error("There was a problem deleting this category");
+    }
+  };
+
+  const handleDeleteCall = (categoryId) => {
+    setModal(true);
+    setCatId(categoryId);
   };
   return (
     <div className="categories-container">
+      {modal && (
+        <Modal
+          message={"delete category"}
+          onClose={() => setModal(false)}
+          onCallAction={handleDeleteCategory}
+        />
+      )}
       <div className="container">
-        <div className="d-flex justify-content-between align-items-center">
+        <div className="flex justify-between items-center">
           <h3>Categories</h3>
-          <Link className="btn btn-primary" to="/category/create-category">
+          <Button color="teal" onClick={() => navigate("/category/create-category")}>
             <i className="fa fa-plus"></i> Category
-          </Link>
+          </Button>
         </div>
         <div className="content">
-          <header className="row">
-            <div className="col-2">Image</div>
-            <div className="col-4">Category name</div>
-            <div className="col-4">Created At</div>
+          <header className="grid grid-cols-3">
+            <div className="">Image</div>
+            <div className="">Category name</div>
+            <div className="">Created At</div>
           </header>
           {categories.map((category, idx) => (
-            <section className="row align-items-center" key={idx}>
-              <div className="col-2 image">
+            <section
+              className="grid grid-cols-3 items-center text-lg text-slate-600"
+              key={idx}
+            >
+              <div className="image">
                 <img src={category.image} alt="category-img" className="img" />
               </div>
-              <div className="col-4 name">{category.name}</div>
-              <div className="col-3 date">
-                {`${new Date(category.createdAt).getDate()} - ${new Date(
-                  category.createdAt
-                ).getMonth()} - ${new Date(category.createdAt).getFullYear()}`}
-              </div>
-              <div className="col-2 icons">
-                <div
-                  className="edit"
-                  onClick={() => handleEditCategory(category._id)}
-                >
-                  <i className="fa fa-edit"></i>
+              <div className="capitalize">{category.name}</div>
+              <div className="flex justify-between capitalize">
+                <div>
+                  {`${new Date(category.createdAt).getDate()} - ${new Date(
+                    category.createdAt
+                  ).getMonth()} - ${new Date(
+                    category.createdAt
+                  ).getFullYear()}`}
                 </div>
-                <div
-                  className="delete"
-                  onClick={() => handleDeleteCategory(category._id)}
-                >
-                  <i className="fa fa-trash"></i>
+                <div className="icons">
+                  <div
+                    className="edit"
+                    onClick={() => handleEditCategory(category._id)}
+                  >
+                    <i className="fa fa-edit"></i>
+                  </div>
+                  <div
+                    className="delete"
+                    onClick={() => handleDeleteCall(category._id)}
+                  >
+                    <i className="fa fa-trash"></i>
+                  </div>
                 </div>
               </div>
             </section>
