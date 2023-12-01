@@ -2,29 +2,40 @@ import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { createdProduct } from "../../redux/slices/product/productSlice";
+import {
+  Button,
+  Input,
+  Select,
+  Option,
+  Textarea,
+} from "@material-tailwind/react";
+import Loader from "../loader/Loader";
 
-import "./create-product.scss";
+// import "./create-product.scss";
 
 const CreateProduct = () => {
   const dispatch = useDispatch();
   const categories = useSelector((state) => state.category.categories);
   const [sections, setSections] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   // category, createdAt, description, isFeatured, name, price, section, image
   const defaultProductField = {
     name: "",
-    isFeatured: "",
-    category: "",
-    section: "",
     price: "",
     description: "",
     brand: "",
   };
   const [image, setImage] = useState();
+  const [isFeatured, setIsFeatured] = useState("")
+  const [category, setCategory] = useState("");
+  const [section, setSection] = useState("");
   const [product, setProduct] = useState(defaultProductField);
   const { name, description, price, brand } = product;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // console.log(e.target.value);
     setProduct({ ...product, [name]: value });
   };
 
@@ -39,21 +50,22 @@ const CreateProduct = () => {
   };
 
   const handleChangeCall = (e) => {
-    handleChange(e);
-    getSectionsFromCategory(e.target.value);
+    setCategory(e)
+    getSectionsFromCategory(e);
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // return console.log(product, category, section, image);
     try {
-      // console.log(product);
+      setLoading(true)
       const formData = new FormData();
       formData.append("image", image);
       formData.append("name", product.name);
       formData.append("price", product.price);
-      formData.append("category", product.category);
-      formData.append("section", product.section);
+      formData.append("category", category);
+      formData.append("section", section);
       formData.append("description", product.description);
-      formData.append("isFeatured", product.isFeatured);
+      formData.append("isFeatured", isFeatured);
       formData.append("brand", product.brand);
       const res = await fetch(`${process.env.REACT_APP_SERVER_HOST}/products`, {
         method: "POST",
@@ -74,129 +86,123 @@ const CreateProduct = () => {
     } catch (error) {
       console.log(error);
       toast.error(error.message);
+    }finally{
+      setLoading(false);
     }
   };
+  // name, brand, price, desc
+  // category, section, isFeatured, image
 
   return (
-    <div className="create-product-container">
-      <div className="container">
-        <form className="form" onSubmit={handleSubmit}>
-          <h4 className="text-center">Create Product</h4>
-          <div>
-            <label htmlFor="name">Product Name:</label>
-            <br />
-            <input
-              type="text"
-              name="name"
-              id="name"
-              required
-              value={name}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label htmlFor="brand">Brand:</label>
-            <br />
-            <input
-              type="text"
-              name="brand"
-              id="brand"
-              required
-              value={brand}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label htmlFor="desc">Description</label>
-            <br />
-            <textarea
-              name="description"
-              id="desc"
-              cols="30"
-              rows="10"
-              className="text-area"
-              placeholder="Type here"
-              required
-              value={description}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="image-upload">
-            <label htmlFor="image">Image</label>
-            <br />
-            <input
-              type="file"
-              name="image"
-              id="image"
-              required
-              onChange={(e) => setImage(e.target.files[0])}
-            />
-            <div className="upload">
-              <span>
-                <i className="fa fa-upload"></i>
-              </span>
-              <div>upload</div>
-            </div>
-          </div>
-          <div className="select-container">
-            <div className="category">
-              <label htmlFor="category">Category</label>
-              <br />
-              <select
-                name="category"
-                id="category"
-                required
-                onChange={(e) => handleChangeCall(e)}
-              >
-                <option defaultValue="" hidden></option>
-                {categories.map((category, idx) => (
-                  <option value={category._id} key={idx}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="section">
-              <label htmlFor="section">Section</label>
-              <br />
-              <select name="section" id="section" onChange={handleChange}>
-                <option defaultValue=""></option>
-                {sections.map((section, idx) => (
-                  <option value={section._id} key={idx}>
-                    {section.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="d-flex justify-content-between align-items-center">
+    <div>
+      {loading && <Loader />}
+      <div className="mt-10">
+        <form
+          className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
+          onSubmit={handleSubmit}
+        >
+          {/* Add text gradient here for title? */}
+          <h4 className="text-xl font-bold text-center uppercase text-slate-600 mb-4">
+            Create Product
+          </h4>
+          <section className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="price">Price:</label>
-              <br />
-              <input
-                type="number"
-                name="price"
-                id="price"
-                required
-                value={price}
-                onChange={handleChange}
-              />
+              <div className="mb-4">
+                <Input
+                  type="text"
+                  name="name"
+                  required
+                  value={name}
+                  onChange={(e) => handleChange(e)}
+                  label="Product name"
+                />
+              </div>
+              <div className="mb-4">
+                <Input
+                  type="text"
+                  name="brand"
+                  required
+                  value={brand}
+                  onChange={handleChange}
+                  label="Brand"
+                />
+              </div>
+              <div className="mb-4">
+                <Textarea
+                  name="description"
+                  required
+                  onChange={handleChange}
+                  value={description}
+                  label="Description"
+                />
+              </div>
+              <div>
+                <Input
+                  type="number"
+                  name="price"
+                  required
+                  value={price}
+                  onChange={handleChange}
+                  label="Price"
+                />
+              </div>
             </div>
             <div>
-              <label htmlFor="featured">isFeatured</label>
-              <select
-                name="isFeatured"
-                id="featured"
-                className="py-1"
-                onChange={handleChange}
-              >
-                <option defaultValue="" hidden></option>
-                <option value="false">False</option>
-                <option value="true">True</option>
-              </select>
+              <div className="mb-4">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  name="image"
+                  label="Product Image"
+                  required
+                  onChange={(e) => setImage(e.target.files[0])}
+                />
+              </div>
+              <div>
+                <div className="mb-4">
+                  <Select
+                    name="category"
+                    label="Category"
+                    onChange={(e) => handleChangeCall(e)}
+                  >
+                    {categories.map((category, idx) => (
+                      <Option value={category._id} key={idx}>
+                        {category.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="mb-4">
+                  <Select
+                    name="section"
+                    onChange={(e) => setSection(e)}
+                    label="Section"
+                  >
+                    {sections.map((section, idx) => (
+                      <Option value={section._id} key={idx}>
+                        {section.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+              <div className="mb-6">
+                <Select
+                  name="isFeatured"
+                  onChange={(e) => setIsFeatured(e)}
+                  label="IsFeatured"
+                >
+                  <Option value="true">True</Option>
+                  <Option value="false">False</Option>
+                </Select>
+              </div>
+              <div className="text-end w-full">
+                <Button color="blue-gray" type="submit" className="w-full">
+                  Submit
+                </Button>
+              </div>
             </div>
-          </div>
-          <button className="btn btn-primary my-3">Create product</button>
+          </section>
         </form>
       </div>
     </div>

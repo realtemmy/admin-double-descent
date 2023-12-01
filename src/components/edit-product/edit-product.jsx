@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getDocument } from "../../helperFunctions";
+// import { getSectionsFromCategory } from "../../helperFunctions";
+import { Button, Input, Textarea } from "@material-tailwind/react";
+import Loader from "../loader/Loader";
 
 import "./edit-product.scss";
-// import "./edit-section.scss";
+import { toast } from "react-toastify";
 
 const EditProduct = () => {
-  //   // category, createdAt, description, isFeatured, name, price, section
-  //   // On category change, get all the value of sections in the category
+  const categories = useSelector((state) => state.category.categories);
+  // category, createdAt, description, isFeatured, name, price, section
+  // On category change, get all the value of sections in the category
 
   const { products, productId } = useSelector((state) => state.product);
   const [product, setProduct] = useState({});
-
+  const [sections, setSections] = useState([]);
+  // const [category, setCategory] = useState("")
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -20,8 +25,22 @@ const EditProduct = () => {
     setIsLoading(false);
   }, [productId, products]);
 
-  const { name, category, description, price, section, isFeatured, image } =
-    product;
+  const {
+    name,
+    category,
+    description,
+    price,
+    section,
+    image,
+    isFeatured,
+    brand,
+  } = product;
+
+  const [newImage, setNewImage] = useState("");
+  let [resImage, setResImage] = useState(null);
+  let [catId, setCatId] = useState(category);
+  let [secId, setSecId] = useState("");
+  let [feature, setFeature] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,112 +49,211 @@ const EditProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(product);
+    // name, category, description, price, section, resImage, brand
+    try {
+      setIsLoading(true);
+      let categoryRes = catId ? catId : category;
+      resImage = resImage ? resImage : image;
+      secId = secId ? secId : section;
+      catId = catId ? catId : category;
+      feature = feature ? feature : isFeatured;
+      const serverRes = {
+        ...product,
+        image: resImage,
+        category: categoryRes,
+        section: secId,
+        isFeatured: feature,
+      };
+      const res = await fetch(
+        `${process.env.REACT_APP_SERVER_HOST}/products/${productId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("admin-token"),
+          },
+          body: serverRes,
+        }
+      );
+      const { data, status } = await res.json();
+      if (status === "success") {
+        // update store with data
+        console.log(data);
+        toast.success("Product edited successfully");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getSectionsFromCategory = async (categoryId) => {
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_SERVER_HOST}/category/${categoryId}/section`
+      );
+      const { data, status } = await res.json();
+      if (status === "success") {
+        setSections(data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleChangeCall = (event) => {
+    getSectionsFromCategory(event.target.value);
+    setCatId(event.target.value);
+  };
+
+  const handleImageChanges = (event) => {
+    if (event.target.files && event.target.files[0]) {
+      setNewImage(URL.createObjectURL(event.target.files[0]));
+    }
+    setResImage(event.target.files[0]);
   };
 
   return (
     <div className="edit-product-container">
-      {isLoading ? (
-        <h5>Edit section page loading...</h5>
-      ) : (
-        <div className="container">
-          <form className="form" onSubmit={handleSubmit}>
+      {isLoading && <Loader />}
+      <div className="mt-10">
+        <form
+          className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
+          onSubmit={handleSubmit}
+        >
+          <h4 className="text-xl font-bold text-center uppercase text-slate-600 mb-4">
+            Edit Products
+          </h4>
+          <section className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="name">Product Name:</label>
-              <br />
-              <input
-                type="text"
-                name="name"
-                id="name"
-                onChange={handleChange}
-                value={name}
-              />
-            </div>
-            <div>
-              <label htmlFor="desc">Description</label>
-              <br />
-              <textarea
-                name="description"
-                id="desc"
-                cols="30"
-                rows="10"
-                className="text-area"
-                placeholder="Type here"
-                value={description}
-                onChange={handleChange}
-              />
-            </div>
-            <label htmlFor="image">Image</label>
-            <div className="image-upload">
-              <br />
-              <input
-                type="file"
-                name="image"
-                id="image"
-                onChange={handleChange}
-                // onChange={(e) => setImage(e.target.files[0])}
-              />
-              <div className="d-flex align-items-center">
-                <div className="upload">
-                  <span>
-                    <i className="fa fa-upload"></i>
-                  </span>
-                  <div>upload</div>
-                </div>
-                <img src={image} alt={name} className="img" />
-              </div>
-            </div>
-            <div className="select-container">
-              <div className="category">
-                <label htmlFor="category">Category</label>
-                <br />
-                <select name="category" id="category" onChange={handleChange}>
-                  <option defaultValue={category}>Provisions</option>
-                  <option value="2">Cosmetics</option>
-                  <option value="3">Kids</option>
-                </select>
-              </div>
-              <div className="section">
-                <label htmlFor="section">Section</label>
-                <br />
-                <select
-                  name="category"
-                  id="category"
-                  onChange={handleChange}
+              <div className="mb-4">
+                <Input
+                  type="text"
+                  name="name"
                   required
-                >
-                  <option defaultValue={section}>facials</option>
-                  <option value="2">canned foods</option>
-                  <option value="3">toys</option>
-                </select>
-              </div>
-            </div>
-            <div className="d-flex align-items-center">
-              <div>
-                <label htmlFor="price">Price:</label>
-                <br />
-                <input
-                  type="number"
-                  name="price"
-                  id="price"
-                  value={price}
+                  value={name}
                   onChange={handleChange}
-                  required
+                  label="Product name"
                 />
               </div>
-              <div className="ms-5">
-                <label htmlFor="featured">isFeatured</label>
-                <select name="isFeatured" id="featured" onChange={handleChange}>
-                  <option defaultValue={isFeatured}>{isFeatured}</option>
-                  <option value="true">True</option>
-                  <option value="false">False</option>
-                </select>
+              <div className="mb-4">
+                <Input
+                  type="text"
+                  name="brand"
+                  required
+                  value={brand}
+                  onChange={handleChange}
+                  label="Brand"
+                />
+              </div>
+              <div className="mb-4">
+                <Textarea
+                  name="description"
+                  required
+                  onChange={handleChange}
+                  value={description}
+                  label="Description"
+                />
+              </div>
+              <div>
+                <Input
+                  type="number"
+                  name="price"
+                  required
+                  value={price}
+                  onChange={handleChange}
+                  label="Price"
+                />
               </div>
             </div>
-            <button className="btn btn-primary my-3">Edit product</button>
-          </form>
-        </div>
-      )}
+            <div>
+              <div className="mb-4">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  name="image"
+                  label="Product Image"
+                  onChange={handleImageChanges}
+                />
+              </div>
+              <div className="flex items-baseline justify-between my-2 text-sm">
+                {newImage && (
+                  <span>
+                    Newly selected image:{" "}
+                    <img src={newImage} alt="img" className="h-16 rounded" />
+                  </span>
+                )}
+                <span>
+                  {newImage ? "Prev" : "Current"} image:{" "}
+                  <img src={image} alt="preview" className="h-16 rounded" />
+                </span>
+              </div>
+              <div>
+                <div className="mb-4">
+                  <select
+                    name="category"
+                    onChange={handleChangeCall}
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-gray-800 sm:text-sm rounded-md bg-white"
+                  >
+                    {categories.map((cat, idx) => (
+                      <option
+                        value={cat._id}
+                        key={idx}
+                        defaultChecked={category === cat._id}
+                        className="text-gray-900 hover:bg-gray-100"
+                      >
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="mb-4">
+                  <select
+                    name="section"
+                    onChange={(event) => setSecId(event)}
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-gray-800 sm:text-sm rounded-md bg-white"
+                  >
+                    {sections.map((sec, idx) => (
+                      <option
+                        value={sec._id}
+                        key={idx}
+                        defaultChecked={section === sec._id}
+                        className="text-gray-900 hover:bg-gray-100"
+                      >
+                        {sec.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="mb-6">
+                <select
+                  name="category"
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-gray-800 sm:text-sm rounded-md bg-white"
+                  onChange={(event) => setFeature(event.target.value)}
+                >
+                  <option
+                    defaultValue={`${isFeatured}`}
+                    selected
+                    hidden
+                    className="capitalize"
+                  >{`${isFeatured}`}</option>
+                  <option value="false">False</option>
+                  <option value="true">True</option>
+                </select>
+              </div>
+              <div className="text-end w-full">
+                <Button color="blue-gray" type="submit" className="w-full">
+                  Submit
+                </Button>
+              </div>
+            </div>
+          </section>
+        </form>
+      </div>
     </div>
   );
 };

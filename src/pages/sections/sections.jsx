@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
@@ -9,6 +8,7 @@ import { getDocument } from "../../helperFunctions";
 
 import { Button } from "@material-tailwind/react";
 import Modal from "../../components/modal/modal";
+import Loader from "../../components/loader/Loader";
 
 import "./section.scss";
 
@@ -17,6 +17,7 @@ const Sections = () => {
   const navigate = useNavigate();
 
   const [modal, setModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [secId, setSecId] = useState("");
 
   const sections = useSelector((state) => state.section.sections);
@@ -24,11 +25,12 @@ const Sections = () => {
 
   const handleSectionEdit = (sectionId) => {
     dispatch(setSectionId(sectionId));
-    navigate("/section/edit-section");
+    navigate("/sections/edit-section");
   };
 
   const handleSectionDelete = async () => {
     try {
+      setLoading(true)
       const res = await fetch(
         `${process.env.REACT_APP_SERVER_HOST}/sections/${secId}`,
         {
@@ -48,6 +50,8 @@ const Sections = () => {
     } catch (error) {
       console.log(error);
       toast.error("There was a problem deleting this section.");
+    }finally{
+      setLoading(false)
     }
   };
   const handleDeleteCall = (sectionId) => {
@@ -55,8 +59,26 @@ const Sections = () => {
     setSecId(sectionId);
   };
 
+  if(sections.length < 1){
+    return (
+      <div className="flex items-center h-full justify-center gap-4">
+        <h3 className="text-lg font-bold">
+          No section yet, would you like to create section?
+        </h3>
+        <Button
+          variant="outlined"
+          size="sm"
+          onClick={() => navigate("/sections/create-section")}
+        >
+          <i className="fa fa-plus"></i> Section
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="sections-container">
+      {loading && <Loader/> }
       {modal && (
         <Modal
           message={"delete section"}
@@ -67,7 +89,7 @@ const Sections = () => {
       <div className="container">
         <div className="flex justify-between items-center">
           <h3>Sections</h3>
-          <Button color="teal" onClick={() => navigate("/section/create-section")}>
+          <Button color="teal" onClick={() => navigate("/sections/create-section")}>
             <i className="fa fa-plus"></i> Section
           </Button>
         </div>

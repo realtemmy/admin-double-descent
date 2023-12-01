@@ -41,7 +41,7 @@ const sidebar = () => {
             Dashboard
           </ListItem>
         </Link>
-        <Link to="/order">
+        <Link to="/orders">
           <ListItem>
             <ListItemPrefix>
               <InboxIcon className="h-5 w-5" />
@@ -59,15 +59,6 @@ const sidebar = () => {
             </ListItemSuffix>
           </ListItem>
         </Link>
-        <Link to="/product">
-          <ListItem>
-            <ListItemPrefix>
-              <ShoppingBagIcon className="h-5 w-5" />
-            </ListItemPrefix>
-            Products
-          </ListItem>
-        </Link>
-
         <Link to="/category">
           <ListItem>
             <ListItemPrefix>
@@ -76,12 +67,20 @@ const sidebar = () => {
             Categories
           </ListItem>
         </Link>
-        <Link to="/section">
+        <Link to="/sections">
           <ListItem>
             <ListItemPrefix>
               <ViewColumnsIcon className="h-5 w-5" />
             </ListItemPrefix>
             Section
+          </ListItem>
+        </Link>
+        <Link to="/products">
+          <ListItem>
+            <ListItemPrefix>
+              <ShoppingBagIcon className="h-5 w-5" />
+            </ListItemPrefix>
+            Products
           </ListItem>
         </Link>
         <Link to="/customers">

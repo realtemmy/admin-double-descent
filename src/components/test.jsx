@@ -15,6 +15,8 @@ function ImageUploader() {
     // TODO: Send the form data to the server
   };
 
+  console.log(selectedFile);
+
   return (
     <div className="flex flex-col items-center justify-center">
       <input

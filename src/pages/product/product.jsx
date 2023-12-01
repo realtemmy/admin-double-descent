@@ -6,6 +6,7 @@ import { Input } from "@material-tailwind/react";
 
 import { setProductId } from "../../redux/slices/product/productSlice";
 import { deletedProduct } from "../../redux/slices/product/productSlice";
+import Loader from "../../components/loader/Loader";
 import Modal from "../../components/modal/modal";
 
 import "./product.scss";
@@ -24,7 +25,7 @@ const Product = () => {
     // dispatch the productId
     dispatch(setProductId(productId));
     // navigate to product/edit-product
-    navigate("/product/edit-product");
+    navigate("/products/edit-product");
   };
 
   const handleProductDelete = async () => {
@@ -61,10 +62,27 @@ const Product = () => {
     setModal(true);
     setPrdId(productId);
   };
+
+  if (products.length < 1) {
+    return (
+      <div className="flex items-center h-full justify-center gap-4">
+        <h3 className="text-lg font-bold">
+          No product yet, would you like to create product?
+        </h3>
+        <Button
+          variant="outlined"
+          size="sm"
+          onClick={() => navigate("/products/create-product")}
+        >
+          <i className="fa fa-plus"></i> product
+        </Button>
+      </div>
+    );
+  }
   return (
     <div className="products-container">
       {isLoading ? (
-        <h4 className="text-center">Loading...</h4>
+        <Loader />
       ) : (
         <div className="container">
           {modal && (
@@ -79,7 +97,7 @@ const Product = () => {
               <h3>Products</h3>
               <Button
                 color="teal"
-                onClick={() => navigate("/product/create-product")}
+                onClick={() => navigate("/products/create-product")}
               >
                 <i className="fa fa-plus"></i> Product
               </Button>

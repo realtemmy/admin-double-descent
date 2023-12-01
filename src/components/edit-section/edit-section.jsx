@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getDocument } from "../../helperFunctions";
+import Loader from "../loader/Loader";
 
 import "./edit-section.scss";
 
@@ -61,7 +62,7 @@ const EditSection = () => {
   return (
     <div className="edit-section-container">
       {isLoading ? (
-        <h5>Edit section page loading...</h5>
+        <Loader />
       ) : (
         <div className="container">
           <form className="form" onSubmit={handleSubmit}>

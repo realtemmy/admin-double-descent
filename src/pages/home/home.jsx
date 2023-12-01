@@ -1,7 +1,11 @@
+import { useEffect } from "react";
 import Shop from "../shop/shop";
 import Sidebar from "../sidebar/sidebar";
 
 const Home = () => {
+  useEffect(() => {
+    document.title = "Double decent | Admin"
+  })
   return (
     <div>
       <div className="flex">

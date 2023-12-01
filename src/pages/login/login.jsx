@@ -110,6 +110,9 @@ const Login = () => {
               <Link to="/register" className="link">
                 Sign up
               </Link>
+              <p className="fw-lighter text-xs mt-3">
+                If you've forgotten your password, call Temi
+              </p>
             </p>
           </form>
         </div>
