@@ -27,14 +27,14 @@ function App() {
     dispatch(getSections());
   }, [dispatch]);
   return (
-    <><Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/*" element={<Home />} />
-    </Routes>
-    <ToastContainer />
+    <>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/*" element={<Home />} />
+      </Routes>
+      <ToastContainer />
     </>
-    
   );
 }
 

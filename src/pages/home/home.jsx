@@ -4,15 +4,15 @@ import Sidebar from "../sidebar/sidebar";
 
 const Home = () => {
   useEffect(() => {
-    document.title = "Double decent | Admin"
-  })
+    document.title = "Double decent | Admin";
+  });
   return (
     <div>
       <div className="flex">
-        <div className="">
+        <aside className="h-screen fixed">
           <Sidebar />
-        </div>
-        <div className="w-full px-4">
+        </aside>
+        <div className="flex-1 overflow-y-auto ml-64 p-4">
           <Shop />
         </div>
       </div>

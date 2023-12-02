@@ -15,11 +15,12 @@ import { Button } from "@material-tailwind/react";
 const Product = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isLoading, products } = useSelector((state) => state.product);
+  const { products } = useSelector((state) => state.product);
 
   const [modal, setModal] = useState(false);
   const [prdId, setPrdId] = useState("");
   const [searchProductName, setSearchProductName] = useState("");
+  const [loader, setLoader] = useState(false);
 
   const handleEditProduct = (productId) => {
     // dispatch the productId
@@ -30,6 +31,7 @@ const Product = () => {
 
   const handleProductDelete = async () => {
     try {
+      setLoader(true);
       const res = await fetch(
         `${process.env.REACT_APP_SERVER_HOST}/products/${prdId}`,
         {
@@ -51,6 +53,8 @@ const Product = () => {
     } catch (error) {
       console.log(error);
       toast.error("There was a problem deleting this product.");
+    } finally {
+      setLoader(false);
     }
   };
 
@@ -82,73 +86,70 @@ const Product = () => {
   }
   return (
     <div className="products-container">
-      {isLoading ? (
-        <Loader />
-      ) : (
-        <div className="container">
-          {modal && (
-            <Modal
-              message={"delete product"}
-              onClose={() => setModal(false)}
-              onCallAction={handleProductDelete}
-            />
-          )}
-          <div>
-            <div className="flex justify-between items-center">
-              <h3>Products</h3>
-              <Button
-                color="teal"
-                onClick={() => navigate("/products/create-product")}
-              >
-                <i className="fa fa-plus"></i> Product
+      {loader && <Loader />}
+      <div className="container">
+        {modal && (
+          <Modal
+            message={"delete product"}
+            onClose={() => setModal(false)}
+            onCallAction={handleProductDelete}
+          />
+        )}
+        <div>
+          <div className="flex justify-between items-center">
+            <h3>Products</h3>
+            <Button
+              color="teal"
+              onClick={() => navigate("/products/create-product")}
+            >
+              <i className="fa fa-plus"></i> Product
+            </Button>
+          </div>
+          <header className="my-4">
+            <form className="flex items-center gap-2" onSubmit={handleSubmit}>
+              <Input
+                type="search"
+                label="Search Products"
+                containerProps={{
+                  className: "min-w-[288px]",
+                }}
+                onChange={(event) => setSearchProductName(event.target.value)}
+              />
+              <Button color="blue-gray" type="submit">
+                Search
               </Button>
-            </div>
-            <header className="my-4">
-              <form className="flex items-center gap-2" onSubmit={handleSubmit}>
-                <Input
-                  type="search"
-                  label="Search Products"
-                  containerProps={{
-                    className: "min-w-[288px]",
-                  }}
-                  onChange={(event) => setSearchProductName(event.target.value)}
-                />
-                <Button color="blue-gray" type="submit">Search</Button>
-              </form>
-            </header>
-            <p className="text-2xl pl-4p font-bold my-4">
-              Product catalogue
-            </p>
-            <div className="content">
-              {products.map((product, idx) => (
-                <section key={idx}>
-                  <div className="image">
-                    <img src={product.image} alt="dano" className="img" />
+            </form>
+          </header>
+          <p className="text-2xl pl-4p font-bold my-4">Product catalogue</p>
+          <div className="content">
+            {products.map((product, idx) => (
+              <section key={idx}>
+                <div className="image">
+                  <img src={product.image} alt="dano" className="img" />
+                </div>
+                <div className="product-details">
+                  <div className="name">{product.name}</div>
+                  <div className="price">&#x20A6;{product.price}</div>
+                  <div className="btn-container">
+                    <button
+                      className="edit"
+                      onClick={() => handleEditProduct(product._id)}
+                    >
+                      <i className="fa fa-edit"></i>edit
+                    </button>
+                    <button
+                      className="delete"
+                      onClick={() => handleDeleteCall(product._id)}
+                    >
+                      <i className="fa fa-trash"></i>delete
+                    </button>
                   </div>
-                  <div className="product-details">
-                    <div className="name">{product.name}</div>
-                    <div className="price">&#x20A6;{product.price}</div>
-                    <div className="btn-container">
-                      <button
-                        className="edit"
-                        onClick={() => handleEditProduct(product._id)}
-                      >
-                        <i className="fa fa-edit"></i>edit
-                      </button>
-                      <button
-                        className="delete"
-                        onClick={() => handleDeleteCall(product._id)}
-                      >
-                        <i className="fa fa-trash"></i>delete
-                      </button>
-                    </div>
-                  </div>
-                </section>
-              ))}
-            </div>
+                </div>
+              </section>
+            ))}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

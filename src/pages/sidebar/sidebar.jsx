@@ -25,7 +25,12 @@ const sidebar = () => {
   return (
     <Card className="h-[calc(100vh-2rem)] w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 fixe">
       <div className="mb-2 flex items-center gap-4 p-4 pb-2">
-        <img src="/img/logo-ct-dark.png" alt="brand" className="h-8 w-8" />
+        <img
+          src={require("./../../assets/logo.jpeg")}
+          alt="brand"
+          className="h-8 w-12 rounded shadow cursor-pointer"
+          // onClick={}
+        />
         <Typography variant="h5" color="blue-gray">
           Double decent
         </Typography>

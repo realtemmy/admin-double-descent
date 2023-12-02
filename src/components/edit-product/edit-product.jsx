@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { getDocument } from "../../helperFunctions";
-// import { getSectionsFromCategory } from "../../helperFunctions";
 import { Button, Input, Textarea } from "@material-tailwind/react";
 import Loader from "../loader/Loader";
 
@@ -10,8 +9,6 @@ import { toast } from "react-toastify";
 
 const EditProduct = () => {
   const categories = useSelector((state) => state.category.categories);
-  // category, createdAt, description, isFeatured, name, price, section
-  // On category change, get all the value of sections in the category
 
   const { products, productId } = useSelector((state) => state.product);
   const [product, setProduct] = useState({});

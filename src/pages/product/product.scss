@@ -12,10 +12,11 @@
         }
     }
     .content{
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 20px;
         flex-wrap: wrap;
-        margin: 0 1rem;
+        // margin: 0 1rem;
         section{
             display: flex;
             // align-items: center;

@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Button } from "@material-tailwind/react";
-
 import {
   setCategoryId,
   deletedCategory,
 } from "../../redux/slices/category/categorySlice";
+import Loader from "../../components/loader/Loader";
 import Modal from "../../components/modal/modal";
 
 // import "./category.scss";
@@ -22,6 +22,7 @@ const Categories = () => {
 
   const [modal, setModal] = useState(false);
   const [catId, setCatId] = useState("");
+  const [loader, setLoader] = useState(false);
 
   const categories = useSelector((state) => state.category.categories);
 
@@ -32,6 +33,7 @@ const Categories = () => {
 
   const handleDeleteCategory = async () => {
     try {
+      setLoader(true);
       const res = await fetch(
         `${process.env.REACT_APP_SERVER_HOST}/category/${catId}`,
         {
@@ -53,6 +55,8 @@ const Categories = () => {
       toast.error(
         error.message || "There was a problem deleting this category"
       );
+    } finally {
+      setLoader(false);
     }
   };
 
@@ -84,6 +88,7 @@ const Categories = () => {
 
   return (
     <div className="categories-container">
+      {loader && <Loader />}
       {modal && (
         <Modal
           message={"delete category"}
@@ -122,11 +127,9 @@ const Categories = () => {
               <div className="capitalize">{category.name}</div>
               <div className="flex justify-between capitalize">
                 <div>
-                  {`${new Date(category.createdAt).getDate()}/${new Date(
-                    category.createdAt
-                  ).getMonth() + 1}/${new Date(
-                    category.createdAt
-                  ).getFullYear()}`}
+                  {`${new Date(category.createdAt).getDate()}/${
+                    new Date(category.createdAt).getMonth() + 1
+                  }/${new Date(category.createdAt).getFullYear()}`}
                 </div>
                 <div className="flex gap-2">
                   <div

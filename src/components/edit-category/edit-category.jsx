@@ -13,12 +13,20 @@ const EditCategory = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState(null);
   const [categoryName, setCategoryName] = useState("");
+  const [newImage, setNewImage] = useState("");
 
   useEffect(() => {
     const category = categories.find((category) => category._id === categoryId);
     setCategory(category);
     setIsLoading(false);
   }, [categoryId, categories, setIsLoading]);
+
+  const handleImageChanges = (event) => {
+    if (event.target.files && event.target.files[0]) {
+      setNewImage(URL.createObjectURL(event.target.files[0]));
+    }
+    setSelectedFile(event.target.files[0]);
+  };
 
   const handleSubmit = async (e) => {
     // I'd still change to formdata type
@@ -37,8 +45,7 @@ const EditCategory = () => {
         {
           method: "PATCH",
           headers: {
-            "Authorization":
-              "Bearer " + localStorage.getItem("admin-token"),
+            Authorization: "Bearer " + localStorage.getItem("admin-token"),
           },
           body: JSON.stringify(formData),
         }
@@ -77,16 +84,22 @@ const EditCategory = () => {
                 accept="image/*"
                 label="Choose another image"
                 name="image"
-                onChange={(e) => setSelectedFile(e.target.files[0])}
+                onChange={handleImageChanges}
               />
               <div className="flex justify-between">
                 {selectedFile && (
                   <span>
-                    Selected image: <img src={selectedFile} alt="alt" />{" "}
+                    Selected image:{" "}
+                    <img
+                      className="h-14 mt-2 rounded-lg object-cover object-center"
+                      src={newImage}
+                      alt="alt"
+                    />{" "}
                   </span>
                 )}
                 <span>
-                  Current Image:
+                  {selectedFile ? "Prev " : "Current "}
+                  Image:
                   <img
                     className="h-14 mt-2 rounded-lg object-cover object-center"
                     src={category.image}

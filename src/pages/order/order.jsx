@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { updateOrder } from "../../redux/slices/order/orderSlice";
 import { toast } from "react-toastify";
-import { MediumLoader } from "../../components/loader/Loader";
+// import { MediumLoader } from "../../components/loader/Loader";
 import Loader from "../../components/loader/Loader";
 
 // types of order: delivered, pending, cancelled, paid
@@ -163,60 +163,60 @@ const Order = () => {
             <p className="col-span-1">Amount</p>
             <p className="col-span-1">Status</p>
           </div>
-          <div className="[&>*:nth-child(even)]:bg-teal-50 [&>*:nth-child(odd)]:bg-teal-100">
-            <>
-              {orders.length < 1 ? (
-                <p>No document here at the moment!</p>
-              ) : (
-                orders.map((order, idx) => (
-                  <div
-                    className="grid grid-cols-7 gap-2 p-2 rounded mt-2 "
-                    key={idx}
-                  >
-                    <p className="col-span-2 text-sm font-semibold break-words">
-                      {order._id}
-                    </p>
-                    <p className="col-span-2">
-                      {order.products.map((product) => product.name).join(", ")}
-                    </p>
-                    {/* <p className="col-span-1 truncate">{order.user}</p> */}
-                    <p className="col-span-1 text-sm">
-                      {new Date(order.createdAt).toDateString()}
-                    </p>
-                    <p className="col-span-1">&#x20A6;{order.totalAmount}</p>
-                    <p className="col-span-1">
-                      {order.status === "paid" ? (
-                        <Button
-                          color="green"
-                          size="sm"
-                          className="px-3 self-center"
-                          onClick={() => handleConfirmOrder(order.id)}
-                        >
-                          <span className="text-xs">Confirm order</span>
-                        </Button>
-                      ) : order.status === "pending" ? (
-                        <span className="text-sm capitalize font-semibold">
-                          {order.status}{" "}
-                          <i className="fas fa-shipping-fast text-blue-500"></i>
-                        </span>
-                      ) : order.status === "delivered" ? (
-                        <span className="text-sm capitalize font-semibold">
-                          delivered{" "}
-                          <i className="fas fa-shopping-basket text-green-500"></i>
-                        </span>
-                      ) : (
-                        <span className="text-sm capitalize font-semibold">
-                          cancelled{" "}
-                          <i className="fas fa-times-circle text-red-500"></i>
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                ))
-              )}
-              {}
-            </>
-          </div>
+          {orders.length < 1 ? (
+            <div className="flex items-center flex-col mt-10 justify-center">
+              <img src={require("../../assets/empty-cart.png")} alt="img" className="w-44" />
+              <Button>Oops! No order available here, yet.</Button>
+            </div>
+          ) : (
+            <div className="[&>*:nth-child(even)]:bg-teal-50 [&>*:nth-child(odd)]:bg-teal-100">
+              {orders.map((order, idx) => (
+                <div
+                  className="grid grid-cols-7 gap-2 p-2 rounded mt-2 "
+                  key={idx}
+                >
+                  <p className="col-span-2 text-sm font-semibold break-words">
+                    {order._id}
+                  </p>
+                  <p className="col-span-2">
+                    {order.products.map((product) => product.name).join(", ")}
+                  </p>
+                  {/* <p className="col-span-1 truncate">{order.user}</p> */}
+                  <p className="col-span-1 text-sm">
+                    {new Date(order.createdAt).toDateString()}
+                  </p>
+                  <p className="col-span-1">&#x20A6;{order.totalAmount}</p>
+                  <p className="col-span-1">
+                    {order.status === "paid" ? (
+                      <Button
+                        color="green"
+                        size="sm"
+                        className="px-3 self-center"
+                        onClick={() => handleConfirmOrder(order.id)}
+                      >
+                        <span className="text-xs">Confirm order</span>
+                      </Button>
+                    ) : order.status === "pending" ? (
+                      <span className="text-sm capitalize font-semibold">
+                        {order.status}{" "}
+                        <i className="fas fa-shipping-fast text-blue-500"></i>
+                      </span>
+                    ) : order.status === "delivered" ? (
+                      <span className="text-sm capitalize font-semibold">
+                        delivered{" "}
+                        <i className="fas fa-shopping-basket text-green-500"></i>
+                      </span>
+                    ) : (
+                      <span className="text-sm capitalize font-semibold">
+                        cancelled{" "}
+                        <i className="fas fa-times-circle text-red-500"></i>
+                      </span>
+                    )}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </TabsBody>
       </Tabs>
     </>

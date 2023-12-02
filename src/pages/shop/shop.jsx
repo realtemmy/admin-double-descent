@@ -17,7 +17,7 @@ import ImageUploader from "../../components/test";
 
 const Shop = () => {
   return (
-    <div>
+    <div className="px-2">
       <Routes>
         <Route path="/" element={<Navigation />}>
           <Route index element={<Dashboard />} />
