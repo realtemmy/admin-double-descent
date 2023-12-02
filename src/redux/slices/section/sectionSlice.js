@@ -24,6 +24,7 @@ const sectionSlice = createSlice({
   initialState,
   reducers: {
     setSection: (state, action) => {
+      console.log(action.payload);
       state.sections = action.payload;
     },
     setSectionId: (state, action) => {

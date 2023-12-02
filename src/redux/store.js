@@ -3,6 +3,7 @@ import categoryReducer from "./slices/category/categorySlice";
 import sectionReducer from "./slices/section/sectionSlice";
 import productReducer from "./slices/product/productSlice";
 import userReducer from "./slices/user/userSlice";
+import orderReducer from "./slices/order/orderSlice";
 
 import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from "redux-persist";
 import storage from "redux-persist/lib/storage";
@@ -17,6 +18,7 @@ const rootReducer = combineReducers({
   section: sectionReducer,
   product: productReducer,
   admin: userReducer,
+  order: orderReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

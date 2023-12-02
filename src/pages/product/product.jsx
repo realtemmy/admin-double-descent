@@ -40,6 +40,7 @@ const Product = () => {
           },
         }
       );
+      console.log(res);
       if (res.ok) {
         // delete from product slice
         dispatch(deletedProduct(prdId));

@@ -124,7 +124,7 @@ const Categories = () => {
                 <div>
                   {`${new Date(category.createdAt).getDate()}/${new Date(
                     category.createdAt
-                  ).getMonth()}/${new Date(
+                  ).getMonth() + 1}/${new Date(
                     category.createdAt
                   ).getFullYear()}`}
                 </div>

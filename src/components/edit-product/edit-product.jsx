@@ -198,11 +198,13 @@ const EditProduct = () => {
                     onChange={handleChangeCall}
                     className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-gray-800 sm:text-sm rounded-md bg-white"
                   >
+                    <option selected defaultValue={category} hidden>
+                      {getDocument(categories, category)?.name}
+                    </option>
                     {categories.map((cat, idx) => (
                       <option
                         value={cat._id}
                         key={idx}
-                        defaultChecked={category === cat._id}
                         className="text-gray-900 hover:bg-gray-100"
                       >
                         {cat.name}
