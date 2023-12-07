@@ -63,7 +63,7 @@ const Order = () => {
           )
         ).json();
         setOrders(res.data);
-        // console.log(res);
+        console.log(res.data);
       } catch (error) {
         console.log(error);
       } finally {
