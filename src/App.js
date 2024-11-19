@@ -5,11 +5,13 @@ import { useDispatch } from "react-redux";
 import { getCategories } from "./redux/slices/category/categorySlice";
 import { getSections } from "./redux/slices/section/sectionSlice";
 import { getProducts } from "./redux/slices/product/productSlice";
+import { orderCount } from "./redux/slices/order/orderSlice";
 import { ToastContainer } from "react-toastify";
 
 import Home from "./pages/home/home";
 import Login from "./pages/login/login";
 import Register from "./pages/register/register";
+import Todos from "./pages/todo";
 
 function App() {
   // seems page would have to reload when delete method is called
@@ -26,11 +28,16 @@ function App() {
   useEffect(() => {
     dispatch(getSections());
   }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(orderCount());
+  }, [dispatch]);
   return (
     <>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/todo" element={<Todos />} />
         <Route path="/*" element={<Home />} />
       </Routes>
       <ToastContainer />

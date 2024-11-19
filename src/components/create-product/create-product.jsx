@@ -93,6 +93,8 @@ const CreateProduct = () => {
   // name, brand, price, desc
   // category, section, isFeatured, image
 
+  // console.log(categories);
+
   return (
     <div>
       {loading && <Loader />}

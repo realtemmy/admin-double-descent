@@ -19,7 +19,7 @@ const Order = () => {
   const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState("all");
   const [loader, setLoader] = useState(false);
-  const [miniLoader, setMiniLoader] = useState(false);
+  // const [miniLoader, setMiniLoader] = useState(false);
   const [orders, setOrders] = useState([]);
 
   const data = [
@@ -45,6 +45,10 @@ const Order = () => {
     },
   ];
 
+  // useEffect(() => {
+  //   toast("Displaying content");
+  // }, []);
+
   useEffect(() => {
     const getAllOrders = async () => {
       setLoader(true);
@@ -63,8 +67,9 @@ const Order = () => {
           )
         ).json();
         setOrders(res.data);
-        console.log(res.data);
+        // console.log(res.data);
       } catch (error) {
+        toast.error(error.message);
         console.log(error);
       } finally {
         setLoader(false);
@@ -94,11 +99,11 @@ const Order = () => {
         dispatch(updateOrder(response.data));
         toast.success("Order confirmation successful!");
       } else {
-        toast.error("There was a problem confirming order");
+        toast.error(response.message || "There was a problem confirming order");
       }
     } catch (error) {
-      console.log(error);
       toast.error(error.message);
+      // console.log(error);
     } finally {
       setLoader(false);
     }
@@ -135,7 +140,6 @@ const Order = () => {
           </TabsHeader>
         </Tabs> */}
       </div>
-      {/*  */}
       <Tabs value={activeTab}>
         <TabsHeader
           className="rounded-none border-b text-end border-blue-gray-50 bg-transparent p-0"
@@ -165,7 +169,11 @@ const Order = () => {
           </div>
           {orders.length < 1 ? (
             <div className="flex items-center flex-col mt-10 justify-center">
-              <img src={require("../../assets/empty-cart.png")} alt="img" className="w-44" />
+              <img
+                src={require("../../assets/empty-cart.png")}
+                alt="img"
+                className="w-44"
+              />
               <Button>Oops! No order available here, yet.</Button>
             </div>
           ) : (
@@ -192,7 +200,7 @@ const Order = () => {
                         color="green"
                         size="sm"
                         className="px-3 self-center"
-                        onClick={() => handleConfirmOrder(order.id)}
+                        onClick={() => handleConfirmOrder(order._id)}
                       >
                         <span className="text-xs">Confirm order</span>
                       </Button>

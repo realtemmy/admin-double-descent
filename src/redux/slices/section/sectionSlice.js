@@ -10,7 +10,7 @@ export const getSections = createAsyncThunk(
   "sections/getSections",
   async () => {
     try {
-      const res = await fetch(`${process.env.REACT_APP_SERVER_HOST}/sections`);
+      const res = await fetch(`${process.env.LOCAL_SERVER}/sections`);
       const { data } = await res.json();
       return data;
     } catch (error) {

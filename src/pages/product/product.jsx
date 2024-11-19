@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
@@ -8,6 +8,7 @@ import { setProductId } from "../../redux/slices/product/productSlice";
 import { deletedProduct } from "../../redux/slices/product/productSlice";
 import Loader from "../../components/loader/Loader";
 import Modal from "../../components/modal/modal";
+import Pagination from "../../components/pagination/pagination";
 
 import "./product.scss";
 import { Button } from "@material-tailwind/react";
@@ -15,12 +16,37 @@ import { Button } from "@material-tailwind/react";
 const Product = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { products } = useSelector((state) => state.product);
+  // const { products } = useSelector((state) => state.product);
 
+  const [products, setProducts] = useState([]);
   const [modal, setModal] = useState(false);
   const [prdId, setPrdId] = useState("");
   const [searchProductName, setSearchProductName] = useState("");
   const [loader, setLoader] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalDocs, setTotalDocs] = useState(0);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await (
+          await fetch(
+            `${process.env.REACT_APP_SERVER_HOST}/products?page=${currentPage}`
+          )
+        ).json();
+        // console.log(res);
+        const { status, totalDocs, data } = res;
+        if (status === "success") {
+          setTotalDocs(totalDocs);
+          setProducts(data);
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error.message || "There was an error fetching products");
+      }
+    };
+    fetchProducts();
+  }, [currentPage]);
 
   const handleEditProduct = (productId) => {
     // dispatch the productId
@@ -48,11 +74,15 @@ const Product = () => {
         dispatch(deletedProduct(prdId));
         toast.success("Product deleted successfully.");
       } else {
-        toast.error("There was a problem deleting this product.");
+        toast.error(
+          res.message || "There was a problem deleting this product."
+        );
       }
     } catch (error) {
       console.log(error);
-      toast.error("There was a problem deleting this product.");
+      toast.error(
+        error.message || "There was a problem deleting this product."
+      );
     } finally {
       setLoader(false);
     }
@@ -66,6 +96,10 @@ const Product = () => {
   const handleDeleteCall = (productId) => {
     setModal(true);
     setPrdId(productId);
+  };
+
+  const handlePageChange = async (currentPage) => {
+    setCurrentPage(currentPage);
   };
 
   if (products.length < 1) {
@@ -125,7 +159,7 @@ const Product = () => {
             {products.map((product, idx) => (
               <section key={idx}>
                 <div className="image">
-                  <img src={product.image} alt="dano" className="img" />
+                  <img src={product.image} alt={product.name} className="img" />
                 </div>
                 <div className="product-details">
                   <div className="name">{product.name}</div>
@@ -148,6 +182,11 @@ const Product = () => {
               </section>
             ))}
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalDocs={totalDocs}
+            onPageChange={handlePageChange}
+          />
         </div>
       </div>
     </div>

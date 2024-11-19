@@ -1,0 +1,18 @@
+button {
+  padding: 8px 16px;
+  margin: 4px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+  &:disabled {
+    cursor: not-allowed;
+    background-color: #ddd;
+    color: #888;
+    border: 1px solid #ccc;
+  }
+}

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-const url = `${process.env.REACT_APP_SERVER_HOST}/category`;
+const url = `${process.env.LOCAL_SERVER}/category`;
 
 const initialState = {
   categories: [],

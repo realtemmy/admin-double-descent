@@ -9,23 +9,26 @@ import { PersistGate } from "redux-persist/integration/react";
 import { persistor } from "./redux/store";
 import { ThemeProvider } from "@material-tailwind/react";
 import store from "./redux/store";
+
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import reportWebVitals from "./reportWebVitals";
 
-// import "bootstrap/dist/css/bootstrap.min.css";in
-// import "bootstrap/dist/js/bootstrap.bundle.min";
-
 import "react-toastify/dist/ReactToastify.css";
+
+const queryClient = new QueryClient();
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
       <PersistGate persistor={persistor}>
-        <BrowserRouter>
-          <ThemeProvider>
-            <App />
-          </ThemeProvider>
-        </BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <ThemeProvider>
+              <App />
+            </ThemeProvider>
+          </BrowserRouter>
+        </QueryClientProvider>
       </PersistGate>
     </Provider>
   </React.StrictMode>
