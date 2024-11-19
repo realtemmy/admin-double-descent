@@ -10,7 +10,7 @@ export const getProducts = createAsyncThunk(
   "products/getproducts",
   async () => {
     try {
-      const res = await fetch(`${process.env.REACT_APP_SERVER_HOST}/products`);
+      const res = await fetch(`${process.env.LOCAL_SERVER}/products`);
       const { data } = await res.json();
       return data;
     } catch (error) {

@@ -1,63 +1,86 @@
 import { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { getDocument } from "../../helperFunctions";
-import { setSection } from "../../redux/slices/section/sectionSlice";
-import Loader from "../loader/Loader";
-
-// import "./edit-section.scss";
+import { useParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Button, Input } from "@material-tailwind/react";
 import { toast } from "react-toastify";
+import Loader from "../loader/Loader";
 
 const EditSection = () => {
-  const dispatch = useDispatch();
-  const sections = useSelector((state) => state.section.sections);
-  const sectionId = useSelector((state) => state.section.sectionId);
-  const categories = useSelector((state) => state.category.categories);
+  const { sectionId } = useParams();
 
-  const defaultSectionField = {
-    name: "",
-    category: "",
-  };
+  const {
+    isLoading,
+    error,
+    data: sections,
+  } = useQuery({
+    queryKey: ["sections"],
+    queryFn: async () => {
+      const res = await fetch("http://localhost:5000/api/v1/sections");
+      return res.json();
+    },
+  });
+
+  const { data: section } = useQuery({
+    queryKey: ["sections", sectionId],
+    queryFn: async () => {
+      const res = await fetch(
+        `http://localhost:5000/api/v1/sections/${sectionId}`
+      );
+      return res.json();
+    },
+  });
+
+  const [formData, setFormData] = useState({
+    name: section?.data?.name || "",
+    category: section?.data?.category || "",
+  });
 
   useEffect(() => {
-    console.log(sections);
-    const section = sections.find((section) => section.id === sectionId);
-    // const sec = getDocument(sections, "65676b246eb7686fb870d339");
-    // console.log(sec, section);
-    setStateSection(section);
-    setIsLoading(false);
-  }, [sectionId]);
-
-  const [section, setStateSection] = useState(defaultSectionField);
-  const [isLoading, setIsLoading] = useState(true);
+    setFormData({
+      name: section?.data.name,
+      category: section?.data.category,
+    });
+  }, [section?.data?.category, section?.data?.name]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setStateSection({ ...section, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  const { name, category } = section;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // console.log(section);
+    console.log(formData);
+    
     try {
-      const res = await (await fetch(
-        `${process.env.REACT_APP_SERVER_HOST}/sections/${sectionId}`
-      )).json();
-      // await res.json()
-      console.log(res);
-      if(res.status === "success"){
-        dispatch(setSection(res.data));
-        toast.success("Section edited successfully")
+      const res = await fetch(
+        `http://localhost:5000/api/v1/sections/${sectionId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+      const result = await res.json();
+      if (result.status === "success") {
+        toast.success("Section edited successfully!");
+      } else {
+        toast.error("Failed to edit section.");
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      toast.error("An error occurred.");
     }
   };
 
+  if (isLoading) return <Loader />;
+  if (error) return <div>Error loading sections: {error.message}</div>;
+  if (!section || !sections) return <div>Section data is unavailable.</div>;
+
+
   return (
     <div className="max-w-md mx-auto">
-      {isLoading && <Loader />}
       <form
         className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
         onSubmit={handleSubmit}
@@ -70,7 +93,7 @@ const EditSection = () => {
             label="Section name"
             type="text"
             name="name"
-            value={name}
+            value={formData.name}
             onChange={handleChange}
             required
           />
@@ -78,26 +101,23 @@ const EditSection = () => {
         <div className="my-2">
           <select
             name="category"
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-gray-800 sm:text-sm rounded-md bg-white"
-            defaultValue={category}
+            value={formData.category}
             onChange={handleChange}
+            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-gray-800 sm:text-sm rounded-md bg-white"
           >
-            <option selected defaultValue={category} hidden>
-              {getDocument(categories, category)?.name}
-            </option>
-            {categories.map((cat, idx) => (
-              <option
-                value={cat._id}
-                key={idx}
-                className="text-gray-900 hover:bg-gray-100"
-              >
-                {cat.name}
+            {sections.data.map((sec) => (
+              <option value={sec._id} key={sec._id}>
+                {sec.name}
               </option>
             ))}
           </select>
         </div>
         <div className="text-end">
-          <Button color="blue-gray" type="submit">
+          <Button
+            color="blue-gray"
+            className="hover:bg-blue-gray-400"
+            type="submit"
+          >
             Submit
           </Button>
         </div>

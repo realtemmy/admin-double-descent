@@ -14,6 +14,7 @@ import EditProduct from "../../components/edit-product/edit-product";
 import Order from "../order/order";
 import Customers from "../../components/customer/customer";
 import ImageUploader from "../../components/test";
+import EmailComponent from "../../components/email/email";
 
 const Shop = () => {
   return (
@@ -30,12 +31,13 @@ const Shop = () => {
           <Route path="/category/edit-category" element={<EditCategory />} />
           <Route path="/sections" element={<Sections />} />
           <Route path="/sections/create-section" element={<CreateSection />} />
-          <Route path="/sections/edit-section" element={<EditSection />} />
+          <Route path="/sections/edit-section/:sectionId" element={<EditSection />} />
           <Route path="/products" element={<Product />} />
           <Route path="/products/create-product" element={<CreateProduct />} />
           <Route path="/products/edit-product" element={<EditProduct />} />
           <Route path="/orders" element={<Order />} />
           <Route path="/customers" element={<Customers />} />
+          <Route path="/send-email" element={<EmailComponent />} />
         </Route>
       </Routes>
     </div>

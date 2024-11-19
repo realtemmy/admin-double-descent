@@ -9,6 +9,7 @@ import {
   ListItemSuffix,
   Chip,
 } from "@material-tailwind/react";
+
 import {
   PresentationChartBarIcon,
   ShoppingBagIcon,
@@ -19,9 +20,14 @@ import {
   ListBulletIcon,
   ViewColumnsIcon,
   UserGroupIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/solid";
 
-const sidebar = () => {
+import { useSelector } from "react-redux";
+
+const Sidebar = () => {
+  const orderCount = useSelector((state) => state.order.orderCount);
+  // console.log(orderCount);
   return (
     <Card className="h-[calc(100vh-2rem)] w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 fixe">
       <div className="mb-2 flex items-center gap-4 p-4 pb-2">
@@ -55,7 +61,8 @@ const sidebar = () => {
             <ListItemSuffix>
               <Chip
                 // Change value here dynamically
-                value="14"
+                // value="14"
+                value={orderCount}
                 size="sm"
                 variant="ghost"
                 color="blue-gray"
@@ -88,6 +95,14 @@ const sidebar = () => {
             Products
           </ListItem>
         </Link>
+        <Link to="/send-email">
+          <ListItem>
+            <ListItemPrefix>
+              <ChatBubbleLeftRightIcon className="h-5 w-5" />
+            </ListItemPrefix>
+            Send Email
+          </ListItem>
+        </Link>
         <Link to="/customers">
           <ListItem>
             <ListItemPrefix>
@@ -96,6 +111,7 @@ const sidebar = () => {
             Customers
           </ListItem>
         </Link>
+
         <ListItem>
           <ListItemPrefix>
             <UserCircleIcon className="h-5 w-5" />
@@ -119,7 +135,7 @@ const sidebar = () => {
   );
 };
 
-export default sidebar;
+export default Sidebar;
 
 // // import "./sidebar.scss";
 
