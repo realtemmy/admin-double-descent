@@ -1,25 +1,48 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { useSelector, useDispatch } from "react-redux";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { deletedSection } from "../../redux/slices/section/sectionSlice";
-import { setSectionId } from "../../redux/slices/section/sectionSlice";
-import { getDocument } from "../../helperFunctions";
 
-import { Button } from "@material-tailwind/react";
-import Modal from "../../components/modal/modal";
+import {
+  Button,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+} from "@material-tailwind/react";
+
+import axiosService from "../../axios";
+
 import Loader from "../../components/loader/Loader";
 
 import "./section.scss";
 
 const Sections = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [modal, setModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [secId, setSecId] = useState("");
+
+  const handleOpen = () => setModal(!modal);
+
+  const mutation = useMutation({
+    mutationFn: (secId) => deleteSection(secId),
+    onSuccess: (secId) => {
+      queryClient.setQueryData(["sections"], (oldData) => {
+        if (Array.isArray(oldData)) {
+          return oldData.filter((section) => section.id !== secId);
+        }
+        return oldData;
+      });
+      toast.success("Section deleted successfully.");
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error("There was a problem deleting this section.");
+    },
+  });
 
   const { isLoading, error, data } = useQuery({
     queryKey: ["sections"],
@@ -29,42 +52,35 @@ const Sections = () => {
     },
   });
 
-  console.log(data);
-
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
+
   const handleSectionEdit = (sectionId) => {
-    // dispatch(setSectionId(sectionId));
     navigate(`/sections/edit-section/${sectionId}`);
   };
 
-  // const handleSectionDelete = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const res = await fetch(
-  //       `${process.env.REACT_APP_SERVER_HOST}/sections/${secId}`,
-  //       {
-  //         method: "DELETE",
-  //         headers: {
-  //           "Content-type": "application/json",
-  //           Authorization: "Bearer " + localStorage.getItem("admin-token"),
-  //         },
-  //       }
-  //     );
-  //     if (res.ok) {
-  //       dispatch(deletedSection(secId));
-  //       toast.success("Section deleted successfully.");
-  //     } else {
-  //       toast.error("There was a problem deleting this section.");
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     toast.error("There was a problem deleting this section.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  const handleDeleteCall = (sectionId) => {
+  const deleteSection = async () => {
+    setLoading(true);
+    try {
+      await axiosService.delete(
+        `http://localhost:5000/api/v1/sections/${secId}`,
+        {
+          method: "DELETE",
+        }
+      );
+    } catch (error) {
+      throw new Error("There was an error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSectionDelete = (secId) => {
+    mutation.mutate(secId);
+    setModal(false);
+  };
+
+  const handleDeleteCall = (sectionId, name) => {
     setModal(true);
     setSecId(sectionId);
   };
@@ -89,13 +105,31 @@ const Sections = () => {
   return (
     <div className="sections-container">
       {loading && <Loader />}
-      {modal && (
-        <Modal
-          message={"delete section"}
-          onClose={() => setModal(false)}
-          // onCallAction={handleSectionDelete}
-        />
-      )}
+      <Dialog open={modal} handler={handleOpen}>
+        <DialogHeader className="text-center">
+          Are you sure you want to delete section?
+        </DialogHeader>
+        <DialogBody>
+          Deleting section will delete all products available under section
+        </DialogBody>
+        <DialogFooter>
+          <Button
+            variant="text"
+            color="red"
+            onClick={handleOpen}
+            className="mr-1"
+          >
+            <span>Cancel</span>
+          </Button>
+          <Button
+            variant="gradient"
+            color="green"
+            onClick={handleSectionDelete}
+          >
+            <span>Confirm</span>
+          </Button>
+        </DialogFooter>
+      </Dialog>
       <div className="container">
         <div className="flex justify-between items-center">
           <h3>Sections</h3>

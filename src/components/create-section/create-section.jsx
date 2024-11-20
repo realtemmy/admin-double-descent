@@ -1,23 +1,26 @@
 import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { Button, Input, Select, Option } from "@material-tailwind/react";
-import { createdSection } from "../../redux/slices/section/sectionSlice";
+
 import Loader from "../loader/Loader";
 
-// import "./create-section.scss";
+import axiosService from "../../axios";
 
 const CreateSection = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate()
-  const categories = useSelector((state) => state.category.categories);
   // const sections = useSelector((state) => state.section.sections);
 
   const [loader, setLoader] = useState(false);
   const [category, setCategory] = useState("");
   const [name, setName] = useState("");
 
+  const { isLoading, data:categories, error } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await axiosService.get("/category");
+      return response.data;
+    },
+  });
   const handleSectionSubmit = async (e) => {
     e.preventDefault();
     if (!category || !name) {
@@ -25,31 +28,15 @@ const CreateSection = () => {
     }
     try {
       setLoader(false);
-      const res = await fetch(`${process.env.REACT_APP_SERVER_HOST}/sections`, {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-          Authorization: "Bearer " + localStorage.getItem("admin-token"),
-        },
-        body: JSON.stringify({ name, category }),
+      const { status } = await axiosService.post(`/sections`, {
+        name,
+        category,
       });
-      const data = await res.json();
-      if (data.status === "success") {
-        setLoader(false);
-        toast.success("Section created successfully.");
-        dispatch(createdSection(data.data));
-      } else {
-        setLoader(false);
-        console.log(data.message);
-        toast.error(
-          data.message === "jwt malformed"
-            ? "Your session has expired, Login again"
-            : data.message
-        );
-        if(data.message === "jwt malformed"){
-          navigate('/login')
-        }
+
+      if (status === "success") {
+        toast.success("Section created successfully!");
       }
+
       // console.log(data);
     } catch (error) {
       setLoader(false);
@@ -61,6 +48,16 @@ const CreateSection = () => {
       );
     }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    return <div>Error {error.message}</div>;
+  }
+
+  // console.log("Data: ",data);
+  
   return (
     <div className="max-w-md mx-auto">
       <div>
@@ -97,7 +94,7 @@ const CreateSection = () => {
             </Select>
           </div>
           <div className="text-end">
-            <Button color="blue-gray" type="submit">
+            <Button color="blue-gray" className="hover:bg-blue-gray-400" type="submit">
               Submit
             </Button>
           </div>

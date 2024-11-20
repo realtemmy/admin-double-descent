@@ -36,7 +36,7 @@ const Register = () => {
     e.preventDefault();
     try {
       const res = await (
-        await fetch(`${process.env.REACT_APP_SERVER_HOST}/user/signup`, {
+        await fetch(`http://localhost:5000/api/v1/user/signup`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
