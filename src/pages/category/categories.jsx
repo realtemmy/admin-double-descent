@@ -1,19 +1,22 @@
 import { useState, useEffect } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { Button } from "@material-tailwind/react";
 import {
-  setCategoryId,
-  deletedCategory,
-} from "../../redux/slices/category/categorySlice";
+  Button,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+} from "@material-tailwind/react";
+
 import Loader from "../../components/loader/Loader";
 import Modal from "../../components/modal/modal";
 
-// import "./category.scss";
 import { toast } from "react-toastify";
+import axiosService from "../../axios";
 
 const Categories = () => {
-  const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,32 +27,36 @@ const Categories = () => {
   const [catId, setCatId] = useState("");
   const [loader, setLoader] = useState(false);
 
-  const categories = useSelector((state) => state.category.categories);
+  // const categories = useSelector((state) => state.category.categories);
+
+  const {
+    isLoading,
+    data: categories,
+    error,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await axiosService.get("/category");
+      return response.data;
+    },
+  });
+
+  const mutation = useMutation({
+    mutationKey: ["categories"],
+    mutationFn: (catId) => deleteCategory(catId),
+  });
 
   const handleEditCategory = (categoryId) => {
-    dispatch(setCategoryId(categoryId));
-    navigate("/category/edit-category");
+    navigate(`/category/edit-category/${categoryId}`);
   };
 
-  const handleDeleteCategory = async () => {
+  const deleteCategory = async () => {
     try {
       setLoader(true);
-      const res = await fetch(
-        `${process.env.REACT_APP_SERVER_HOST}/category/${catId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("admin-token"),
-          },
-        }
-      );
-      if (res.ok) {
-        // remove from redux
-        dispatch(deletedCategory(catId));
-        toast.success("Category deleted successfully.");
-        return;
-      }
-      toast.error("There was a problem deleting category.");
+      await axiosService.delete(`/category/${catId}`);
+      queryClient.invalidateQueries(["categories"]);
+
+      toast.success("Category deleted successfully");
     } catch (error) {
       console.log(error);
       toast.error(
@@ -60,6 +67,11 @@ const Categories = () => {
     }
   };
 
+  const handleCategoryDelete = (categoryId) => {
+    mutation.mutate(categoryId);
+    setModal(false);
+  };
+
   const handleViewCategory = (categoryId) => {
     console.log(categoryId);
   };
@@ -68,6 +80,16 @@ const Categories = () => {
     setModal(true);
     setCatId(categoryId);
   };
+
+  const handleOpen = () => setModal(!modal);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error : {error.message}</div>;
+  }
 
   if (categories.length < 1) {
     return (
@@ -88,14 +110,27 @@ const Categories = () => {
 
   return (
     <div className="categories-container">
-      {loader && <Loader />}
-      {modal && (
-        <Modal
-          message={"delete category"}
-          onClose={() => setModal(false)}
-          onCallAction={handleDeleteCategory}
-        />
-      )}
+      {(isLoading || mutation.isPending) && <Loader />}
+      <Dialog open={modal} handler={handleOpen}>
+        <DialogHeader>Are you sure you want to delete?</DialogHeader>
+        <DialogBody>
+          Daleting this category will delete all sections and products under
+          category.
+        </DialogBody>
+        <DialogFooter>
+          <Button
+            variant="text"
+            color="green"
+            onClick={handleOpen}
+            className="mr-1"
+          >
+            <span>Cancel</span>
+          </Button>
+          <Button variant="gradient" color="red" onClick={handleCategoryDelete}>
+            <span>Confirm</span>
+          </Button>
+        </DialogFooter>
+      </Dialog>
       <div className="container">
         <div className="flex justify-between items-center">
           <h3>Categories</h3>

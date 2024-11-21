@@ -28,7 +28,7 @@ const Shop = () => {
             element={<CreateCategory />}
           />
           <Route path="/upload" element={<ImageUploader />} />
-          <Route path="/category/edit-category" element={<EditCategory />} />
+          <Route path="/category/edit-category/:categoryId" element={<EditCategory />} />
           <Route path="/sections" element={<Sections />} />
           <Route path="/sections/create-section" element={<CreateSection />} />
           <Route path="/sections/edit-section/:sectionId" element={<EditSection />} />
