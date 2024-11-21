@@ -1,83 +1,57 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { Input } from "@material-tailwind/react";
+import { Input, Button } from "@material-tailwind/react";
 
-import { setProductId } from "../../redux/slices/product/productSlice";
-import { deletedProduct } from "../../redux/slices/product/productSlice";
+import axiosService from "../../axios";
 import Loader from "../../components/loader/Loader";
 import Modal from "../../components/modal/modal";
 import Pagination from "../../components/pagination/pagination";
 
 import "./product.scss";
-import { Button } from "@material-tailwind/react";
 
 const Product = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  // const { products } = useSelector((state) => state.product);
-
-  const [products, setProducts] = useState([]);
   const [modal, setModal] = useState(false);
   const [prdId, setPrdId] = useState("");
   const [searchProductName, setSearchProductName] = useState("");
   const [loader, setLoader] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalDocs, setTotalDocs] = useState(0);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await (
-          await fetch(
-            `${process.env.REACT_APP_SERVER_HOST}/products?page=${currentPage}`
-          )
-        ).json();
-        // console.log(res);
-        const { status, totalDocs, data } = res;
-        if (status === "success") {
-          setTotalDocs(totalDocs);
-          setProducts(data);
-        }
-      } catch (error) {
-        console.log(error);
-        toast.error(error.message || "There was an error fetching products");
-      }
-    };
-    fetchProducts();
-  }, [currentPage]);
+  // useEffect(() => {
+  //   const fetchProducts = async () => {
+  //     try {
+  //       const res = await axiosService(`/products?page=${currentPage}`);
+
+  //       // console.log(res);
+  //       const { status, totalDocs, data } = res;
+  //       if (status === "success") {
+  //         setTotalDocs(totalDocs);
+  //         setProducts(data);
+  //       }
+  //     } catch (error) {
+  //       console.log(error);
+  //       toast.error(error.message || "There was an error fetching products");
+  //     }
+  //   };
+  //   fetchProducts();
+  // }, [currentPage]);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["products", currentPage],
+    queryFn: () => axiosService.get(`/products?page=${currentPage}`),
+  });
 
   const handleEditProduct = (productId) => {
-    // dispatch the productId
-    dispatch(setProductId(productId));
     // navigate to product/edit-product
-    navigate("/products/edit-product");
+    navigate(`/products/edit-product/${productId}`);
   };
 
   const handleProductDelete = async () => {
     try {
       setLoader(true);
-      const res = await fetch(
-        `${process.env.REACT_APP_SERVER_HOST}/products/${prdId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-type": "application/json",
-            Authorization: "Bearer " + localStorage.getItem("admin-token"),
-          },
-        }
-      );
-      console.log(res);
-      if (res.ok) {
-        // delete from product slice
-        dispatch(deletedProduct(prdId));
-        toast.success("Product deleted successfully.");
-      } else {
-        toast.error(
-          res.message || "There was a problem deleting this product."
-        );
-      }
+      await axiosService.delete(`/products/${prdId}`);
     } catch (error) {
       console.log(error);
       toast.error(
@@ -101,23 +75,25 @@ const Product = () => {
   const handlePageChange = async (currentPage) => {
     setCurrentPage(currentPage);
   };
-
-  if (products.length < 1) {
-    return (
-      <div className="flex items-center h-full justify-center gap-4">
-        <h3 className="text-lg font-bold">
-          No product yet, would you like to create product?
-        </h3>
-        <Button
-          variant="outlined"
-          size="sm"
-          onClick={() => navigate("/products/create-product")}
-        >
-          <i className="fa fa-plus"></i> product
-        </Button>
-      </div>
-    );
-  }
+  
+  // if (products.length < 1) {
+  //   return (
+  //     <div className="flex items-center h-full justify-center gap-4">
+  //       <h3 className="text-lg font-bold">
+  //         No product yet, would you like to create product?
+  //       </h3>
+  //       <Button
+  //         variant="outlined"
+  //         size="sm"
+  //         onClick={() => navigate("/products/create-product")}
+  //       >
+  //         <i className="fa fa-plus"></i> product
+  //       </Button>
+  //     </div>
+  //   );
+  // }
+  if (isLoading) return <Loader />;
+  if (error) return <p>Error: {error.message}</p>;
   return (
     <div className="products-container">
       {loader && <Loader />}
@@ -156,7 +132,7 @@ const Product = () => {
           </header>
           <p className="text-2xl pl-4p font-bold my-4">Product catalogue</p>
           <div className="content">
-            {products.map((product, idx) => (
+            {data.data.map((product, idx) => (
               <section key={idx}>
                 <div className="image">
                   <img src={product.image} alt={product.name} className="img" />
@@ -184,7 +160,7 @@ const Product = () => {
           </div>
           <Pagination
             currentPage={currentPage}
-            totalDocs={totalDocs}
+            totalDocs={data.totalDocs}
             onPageChange={handlePageChange}
           />
         </div>
