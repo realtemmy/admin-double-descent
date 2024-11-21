@@ -28,13 +28,13 @@ const Shop = () => {
             element={<CreateCategory />}
           />
           <Route path="/upload" element={<ImageUploader />} />
-          <Route path="/category/edit-category" element={<EditCategory />} />
+          <Route path="/category/edit-category/:categoryId" element={<EditCategory />} />
           <Route path="/sections" element={<Sections />} />
           <Route path="/sections/create-section" element={<CreateSection />} />
           <Route path="/sections/edit-section/:sectionId" element={<EditSection />} />
           <Route path="/products" element={<Product />} />
           <Route path="/products/create-product" element={<CreateProduct />} />
-          <Route path="/products/edit-product" element={<EditProduct />} />
+          <Route path="/products/edit-product/:productId" element={<EditProduct />} />
           <Route path="/orders" element={<Order />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/send-email" element={<EmailComponent />} />

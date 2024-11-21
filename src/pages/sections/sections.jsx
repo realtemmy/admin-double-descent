@@ -15,8 +15,6 @@ import axiosService from "../../axios";
 
 import Loader from "../../components/loader/Loader";
 
-import "./section.scss";
-
 const Sections = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -28,6 +26,7 @@ const Sections = () => {
   const handleOpen = () => setModal(!modal);
 
   const mutation = useMutation({
+    mutationKey: ["sections"],
     mutationFn: (secId) => deleteSection(secId),
     onSuccess: (secId) => {
       queryClient.setQueryData(["sections"], (oldData) => {
@@ -63,13 +62,10 @@ const Sections = () => {
     setLoading(true);
     try {
       await axiosService.delete(
-        `http://localhost:5000/api/v1/sections/${secId}`,
-        {
-          method: "DELETE",
-        }
+        `/sections/${secId}`
       );
     } catch (error) {
-      throw new Error("There was an error");
+      throw new Error(error.message);
     } finally {
       setLoading(false);
     }

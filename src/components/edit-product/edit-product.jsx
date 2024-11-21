@@ -1,109 +1,88 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { getDocument } from "../../helperFunctions";
+import { useParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Button, Input, Textarea } from "@material-tailwind/react";
 import Loader from "../loader/Loader";
 
 import "./edit-product.scss";
 import { toast } from "react-toastify";
+import axiosService from "../../axios";
 
 const EditProduct = () => {
-  const categories = useSelector((state) => state.category.categories);
+  const { productId } = useParams();
+  const [categoryId, setCategoryId] = useState("");
 
-  const { products, productId } = useSelector((state) => state.product);
-  const [product, setProduct] = useState({});
-  const [sections, setSections] = useState([]);
-  // const [category, setCategory] = useState("")
-  const [isLoading, setIsLoading] = useState(true);
+  // Fetch product
+  const { isLoading, data, error } = useQuery({
+    queryKey: ["product", productId],
+    queryFn: async () => {
+      const res = await axiosService.get(`/products/${productId}`);
+      return res.data;
+    },
+  });
+
+  // Fetch categories
+  const { isLoading: catLoading, data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const res = await axiosService.get("/category");
+      return res.data;
+    },
+  });
+
+  const [product, setProduct] = useState({
+    name: data?.name || "",
+    category: data?.category.id || "",
+    description: data?.description || "",
+    categoryName: data?.categoryName || "",
+    price: data?.price || "",
+    section: data?.section || "",
+    image: data?.image || "",
+    isFeatured: data?.isFeatured || false,
+    brand: data?.brand || "",
+  });
+
+  // Fetch sections in categories
+  const { isLoading: secLoading, data: sections } = useQuery({
+    queryKey: ["sections", product.category],
+    queryFn: async () => {
+      const res = await axiosService.get(
+        `/category/${product.category}/section`
+      );
+      console.log("Response: ", res.data);
+      
+      return res.data;
+    },
+  });
 
   useEffect(() => {
-    const product = getDocument(products, productId);
-    setProduct(product);
-    setIsLoading(false);
-  }, [productId, products]);
-
-  const {
-    name,
-    category,
-    description,
-    price,
-    section,
-    image,
-    isFeatured,
-    brand,
-  } = product;
+    if (data) {
+      setProduct({
+        name: data?.name || "",
+        category: data?.category.id || "",
+        categoryName: data?.category.name || "",
+        description: data?.description || "",
+        price: data?.price || "",
+        section: data?.section || "",
+        image: data?.image || "",
+        isFeatured: data?.isFeatured || false,
+        brand: data?.brand || "",
+      });
+    }
+  }, [data]);
 
   const [newImage, setNewImage] = useState("");
   let [resImage, setResImage] = useState(null);
-  let [catId, setCatId] = useState(category);
-  let [secId, setSecId] = useState("");
-  let [feature, setFeature] = useState("");
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setProduct({ ...product, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // name, category, description, price, section, resImage, brand
-    try {
-      setIsLoading(true);
-      let categoryRes = catId ? catId : category;
-      resImage = resImage ? resImage : image;
-      secId = secId ? secId : section;
-      catId = catId ? catId : category;
-      feature = feature ? feature : isFeatured;
-      const serverRes = {
-        ...product,
-        image: resImage,
-        category: categoryRes,
-        section: secId,
-        isFeatured: feature,
-      };
-      const res = await fetch(
-        `${process.env.REACT_APP_SERVER_HOST}/products/${productId}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("admin-token"),
-          },
-          body: serverRes,
-        }
-      );
-      const { data, status } = await res.json();
-      if (status === "success") {
-        // update store with data
-        console.log(data);
-        toast.success("Product edited successfully");
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getSectionsFromCategory = async (categoryId) => {
-    try {
-      const res = await fetch(
-        `${process.env.REACT_APP_SERVER_HOST}/category/${categoryId}/section`
-      );
-      const { data, status } = await res.json();
-      if (status === "success") {
-        setSections(data);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  if (isLoading || catLoading || secLoading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   const handleChangeCall = (event) => {
-    getSectionsFromCategory(event.target.value);
-    setCatId(event.target.value);
+    setCategoryId(event.target.value);
   };
 
   const handleImageChanges = (event) => {
@@ -113,13 +92,17 @@ const EditProduct = () => {
     setResImage(event.target.files[0]);
   };
 
+  console.log(product.category);
+  console.log(sections);
+  
+
   return (
     <div className="edit-product-container">
       {isLoading && <Loader />}
       <div className="mt-10">
         <form
           className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
-          onSubmit={handleSubmit}
+          // onSubmit={handleSubmit}
         >
           <h4 className="text-xl font-bold text-center uppercase text-slate-600 mb-4">
             Edit Products
@@ -131,8 +114,8 @@ const EditProduct = () => {
                   type="text"
                   name="name"
                   required
-                  value={name}
-                  onChange={handleChange}
+                  value={product.name}
+                  // onChange={handleChange}
                   label="Product name"
                 />
               </div>
@@ -141,8 +124,8 @@ const EditProduct = () => {
                   type="text"
                   name="brand"
                   required
-                  value={brand}
-                  onChange={handleChange}
+                  value={product.brand}
+                  // onChange={handleChange}
                   label="Brand"
                 />
               </div>
@@ -150,8 +133,8 @@ const EditProduct = () => {
                 <Textarea
                   name="description"
                   required
-                  onChange={handleChange}
-                  value={description}
+                  // onChange={handleChange}
+                  value={product.description}
                   label="Description"
                 />
               </div>
@@ -160,8 +143,8 @@ const EditProduct = () => {
                   type="number"
                   name="price"
                   required
-                  value={price}
-                  onChange={handleChange}
+                  value={product.price}
+                  onChange={product.handleChange}
                   label="Price"
                 />
               </div>
@@ -179,13 +162,21 @@ const EditProduct = () => {
               <div className="flex items-baseline justify-between my-2 text-sm">
                 {newImage && (
                   <span>
-                    Newly selected image:{" "}
-                    <img src={newImage} alt="img" className="h-16 rounded" />
+                    Newly selected image:
+                    <img
+                      src={newImage}
+                      alt="img"
+                      className="h-16 w-full object-cover rounded"
+                    />
                   </span>
                 )}
                 <span>
-                  {newImage ? "Prev" : "Current"} image:{" "}
-                  <img src={image} alt="preview" className="h-16 rounded" />
+                  {newImage ? "Prev" : "Current"} image:
+                  <img
+                    src={product.image}
+                    alt="preview"
+                    className="h-16 rounded"
+                  />
                 </span>
               </div>
               <div>
@@ -195,8 +186,8 @@ const EditProduct = () => {
                     onChange={handleChangeCall}
                     className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-gray-800 sm:text-sm rounded-md bg-white"
                   >
-                    <option selected defaultValue={category} hidden>
-                      {getDocument(categories, category)?.name}
+                    <option selected defaultValue={product.category} hidden>
+                      {product.categoryName}
                     </option>
                     {categories.map((cat, idx) => (
                       <option
@@ -212,14 +203,14 @@ const EditProduct = () => {
                 <div className="mb-4">
                   <select
                     name="section"
-                    onChange={(event) => setSecId(event)}
+                    // onChange={(event) => setSecId(event)}
                     className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-gray-800 sm:text-sm rounded-md bg-white"
                   >
                     {sections.map((sec, idx) => (
                       <option
                         value={sec._id}
                         key={idx}
-                        defaultChecked={section === sec._id}
+                        // defaultChecked={section === sec._id}
                         className="text-gray-900 hover:bg-gray-100"
                       >
                         {sec.name}
@@ -232,14 +223,16 @@ const EditProduct = () => {
                 <select
                   name="category"
                   className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-gray-800 sm:text-sm rounded-md bg-white"
-                  onChange={(event) => setFeature(event.target.value)}
+                  // onChange={(event) => setFeature(event.target.value)}
                 >
                   <option
-                    defaultValue={`${isFeatured}`}
+                    // defaultValue={`${isFeatured}`}
                     selected
                     hidden
                     className="capitalize"
-                  >{`${isFeatured}`}</option>
+                  >
+                    {/* {`${isFeatured}`} */}
+                  </option>
                   <option value="false">False</option>
                   <option value="true">True</option>
                 </select>
