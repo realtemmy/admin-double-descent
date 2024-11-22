@@ -8,7 +8,6 @@ import {
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { updateOrder } from "../../redux/slices/order/orderSlice";
 import { toast } from "react-toastify";
 // import { MediumLoader } from "../../components/loader/Loader";
 import Loader from "../../components/loader/Loader";
@@ -96,7 +95,7 @@ const Order = () => {
       const response = await res.json();
       console.log(response);
       if (response.status === "success") {
-        dispatch(updateOrder(response.data));
+        // dispatch(updateOrder(response.data));
         toast.success("Order confirmation successful!");
       } else {
         toast.error(response.message || "There was a problem confirming order");
