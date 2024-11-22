@@ -1,15 +1,13 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { Button, Input } from "@material-tailwind/react";
 
-import { createdCategory } from "../../redux/slices/category/categorySlice";
 import Loader from "../loader/Loader";
 
 // import "./create-category.scss";
 
 const CreateCategory = () => {
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,7 +34,7 @@ const CreateCategory = () => {
       const data = await res.json();
       if (data.status === "success") {
         setLoading(false);
-        dispatch(createdCategory(data.data));
+        // dispatch(createdCategory(data.data));
         toast.success("Category created successfully!");
       } else {
         setLoading(false);

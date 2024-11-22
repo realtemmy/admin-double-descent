@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { Input, Button } from "@material-tailwind/react";
+import {
+  Input,
+  Button,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+} from "@material-tailwind/react";
 
 import axiosService from "../../axios";
 import Loader from "../../components/loader/Loader";
@@ -12,54 +19,41 @@ import Pagination from "../../components/pagination/pagination";
 import "./product.scss";
 
 const Product = () => {
+  const queryClient = useQueryClient();
+
   const navigate = useNavigate();
   const [modal, setModal] = useState(false);
   const [prdId, setPrdId] = useState("");
   const [searchProductName, setSearchProductName] = useState("");
-  const [loader, setLoader] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // useEffect(() => {
-  //   const fetchProducts = async () => {
-  //     try {
-  //       const res = await axiosService(`/products?page=${currentPage}`);
-
-  //       // console.log(res);
-  //       const { status, totalDocs, data } = res;
-  //       if (status === "success") {
-  //         setTotalDocs(totalDocs);
-  //         setProducts(data);
-  //       }
-  //     } catch (error) {
-  //       console.log(error);
-  //       toast.error(error.message || "There was an error fetching products");
-  //     }
-  //   };
-  //   fetchProducts();
-  // }, [currentPage]);
+  const handleOpen = () => setModal(!modal);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["products", currentPage],
     queryFn: () => axiosService.get(`/products?page=${currentPage}`),
   });
 
+  const mutation = useMutation({
+    mutationFn: () => axiosService.delete(`/products/${prdId}`),
+    onSuccess: () => {
+      queryClient.setQueryData(["sections"], (oldData) => {
+        if (Array.isArray(oldData)) {
+          return oldData.filter((product) => product._id !== prdId);
+        }
+        return oldData;
+      });
+      toast.success("Product deleted successfully.");
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error.message || "There was an error deleting product.");
+    },
+  });
+
   const handleEditProduct = (productId) => {
     // navigate to product/edit-product
     navigate(`/products/edit-product/${productId}`);
-  };
-
-  const handleProductDelete = async () => {
-    try {
-      setLoader(true);
-      await axiosService.delete(`/products/${prdId}`);
-    } catch (error) {
-      console.log(error);
-      toast.error(
-        error.message || "There was a problem deleting this product."
-      );
-    } finally {
-      setLoader(false);
-    }
   };
 
   const handleSubmit = (e) => {
@@ -72,44 +66,71 @@ const Product = () => {
     setPrdId(productId);
   };
 
+  const handleProductDelete = () => {
+    mutation.mutate();
+    setModal(false);
+  };
+
   const handlePageChange = async (currentPage) => {
     setCurrentPage(currentPage);
   };
-  
-  // if (products.length < 1) {
-  //   return (
-  //     <div className="flex items-center h-full justify-center gap-4">
-  //       <h3 className="text-lg font-bold">
-  //         No product yet, would you like to create product?
-  //       </h3>
-  //       <Button
-  //         variant="outlined"
-  //         size="sm"
-  //         onClick={() => navigate("/products/create-product")}
-  //       >
-  //         <i className="fa fa-plus"></i> product
-  //       </Button>
-  //     </div>
-  //   );
-  // }
+
   if (isLoading) return <Loader />;
   if (error) return <p>Error: {error.message}</p>;
+
+  if (data.data.length < 1) {
+    return (
+      <div className="flex items-center h-full justify-center gap-4">
+        <h3 className="text-lg font-bold">
+          No product yet, would you like to create product?
+        </h3>
+        <Button
+          variant="outlined"
+          size="sm"
+          onClick={() => navigate("/products/create-product")}
+        >
+          <i className="fa fa-plus"></i> product
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="products-container">
-      {loader && <Loader />}
+      {(mutation.isPending || isLoading) && <Loader />}
       <div className="container">
-        {modal && (
-          <Modal
-            message={"delete product"}
-            onClose={() => setModal(false)}
-            onCallAction={handleProductDelete}
-          />
-        )}
+        <Dialog open={modal} handler={handleOpen}>
+          <DialogHeader className="text-center">
+            Are you sure you want to delete section?
+          </DialogHeader>
+          <DialogBody>
+            Deleting this section will delete all products available under
+            section
+          </DialogBody>
+          <DialogFooter>
+            <Button
+              variant="text"
+              color="red"
+              onClick={handleOpen}
+              className="mr-1"
+            >
+              <span>Cancel</span>
+            </Button>
+            <Button
+              variant="gradient"
+              color="green"
+              onClick={handleProductDelete}
+            >
+              <span>Confirm</span>
+            </Button>
+          </DialogFooter>
+        </Dialog>
         <div>
           <div className="flex justify-between items-center">
             <h3>Products</h3>
             <Button
               color="teal"
+              className="hover:bg-teal-400"
               onClick={() => navigate("/products/create-product")}
             >
               <i className="fa fa-plus"></i> Product

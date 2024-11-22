@@ -25,9 +25,7 @@ const Categories = () => {
 
   const [modal, setModal] = useState(false);
   const [catId, setCatId] = useState("");
-  const [loader, setLoader] = useState(false);
 
-  // const categories = useSelector((state) => state.category.categories);
 
   const {
     isLoading,
@@ -52,7 +50,6 @@ const Categories = () => {
 
   const deleteCategory = async () => {
     try {
-      setLoader(true);
       await axiosService.delete(`/category/${catId}`);
       queryClient.invalidateQueries(["categories"]);
 
@@ -62,9 +59,7 @@ const Categories = () => {
       toast.error(
         error.message || "There was a problem deleting this category"
       );
-    } finally {
-      setLoader(false);
-    }
+    } 
   };
 
   const handleCategoryDelete = (categoryId) => {

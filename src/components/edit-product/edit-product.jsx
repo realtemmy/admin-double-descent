@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Textarea } from "@material-tailwind/react";
 import Loader from "../loader/Loader";
 
@@ -11,6 +11,9 @@ import axiosService from "../../axios";
 const EditProduct = () => {
   const { productId } = useParams();
   const [categoryId, setCategoryId] = useState("");
+  const [sectionId, setSectionId] = useState();
+
+  const queryClient = useQueryClient();
 
   // Fetch product
   const { isLoading, data, error } = useQuery({
@@ -44,13 +47,9 @@ const EditProduct = () => {
 
   // Fetch sections in categories
   const { isLoading: secLoading, data: sections } = useQuery({
-    queryKey: ["sections", product.category],
+    queryKey: ["sections", categoryId],
     queryFn: async () => {
-      const res = await axiosService.get(
-        `/category/${product.category}/section`
-      );
-      console.log("Response: ", res.data);
-      
+      const res = await axiosService.get(`/category/${categoryId}/section`);
       return res.data;
     },
   });
@@ -68,11 +67,45 @@ const EditProduct = () => {
         isFeatured: data?.isFeatured || false,
         brand: data?.brand || "",
       });
+      setCategoryId(data?.category.id || "");
     }
   }, [data]);
 
   const [newImage, setNewImage] = useState("");
   let [resImage, setResImage] = useState(null);
+
+  const mutation = useMutation({
+    mutationKey: ["product"],
+    mutationFn: async () => {
+      const formData = new FormData();
+      formData.append("brand", product.brand);
+      formData.append("category", product.category);
+      formData.append("description", product.description);
+      formData.append("isFeatured", product.isFeatured);
+      formData.append("name", product.name);
+      formData.append("price", product.price);
+      formData.append("section", product.section);
+      if (resImage) {
+        formData.append("image", resImage);
+      }
+
+      const response = await axiosService.patch(
+        `/products/${productId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(response);
+
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["products"]);
+    },
+  });
 
   if (isLoading || catLoading || secLoading) {
     return <div>Loading...</div>;
@@ -83,6 +116,7 @@ const EditProduct = () => {
 
   const handleChangeCall = (event) => {
     setCategoryId(event.target.value);
+    setProduct({ ...product, category: event.target.value });
   };
 
   const handleImageChanges = (event) => {
@@ -92,17 +126,23 @@ const EditProduct = () => {
     setResImage(event.target.files[0]);
   };
 
-  console.log(product.category);
-  console.log(sections);
-  
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setProduct({ ...product, [name]: value });
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    mutation.mutate();
+  };
 
   return (
     <div className="edit-product-container">
-      {isLoading && <Loader />}
+      {(isLoading || catLoading || secLoading) && <Loader />}
       <div className="mt-10">
         <form
           className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
-          // onSubmit={handleSubmit}
+          onSubmit={handleSubmit}
         >
           <h4 className="text-xl font-bold text-center uppercase text-slate-600 mb-4">
             Edit Products
@@ -115,7 +155,7 @@ const EditProduct = () => {
                   name="name"
                   required
                   value={product.name}
-                  // onChange={handleChange}
+                  onChange={handleInputChange}
                   label="Product name"
                 />
               </div>
@@ -125,7 +165,7 @@ const EditProduct = () => {
                   name="brand"
                   required
                   value={product.brand}
-                  // onChange={handleChange}
+                  onChange={handleInputChange}
                   label="Brand"
                 />
               </div>
@@ -133,7 +173,7 @@ const EditProduct = () => {
                 <Textarea
                   name="description"
                   required
-                  // onChange={handleChange}
+                  onChange={handleInputChange}
                   value={product.description}
                   label="Description"
                 />
@@ -144,7 +184,7 @@ const EditProduct = () => {
                   name="price"
                   required
                   value={product.price}
-                  onChange={product.handleChange}
+                  onChange={handleInputChange}
                   label="Price"
                 />
               </div>
@@ -203,14 +243,14 @@ const EditProduct = () => {
                 <div className="mb-4">
                   <select
                     name="section"
-                    // onChange={(event) => setSecId(event)}
+                    onChange={handleInputChange}
                     className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-gray-800 sm:text-sm rounded-md bg-white"
                   >
                     {sections.map((sec, idx) => (
                       <option
                         value={sec._id}
                         key={idx}
-                        // defaultChecked={section === sec._id}
+                        defaultChecked={product.section}
                         className="text-gray-900 hover:bg-gray-100"
                       >
                         {sec.name}
@@ -223,15 +263,15 @@ const EditProduct = () => {
                 <select
                   name="category"
                   className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-gray-800 sm:text-sm rounded-md bg-white"
-                  // onChange={(event) => setFeature(event.target.value)}
+                  onChange={handleInputChange}
                 >
                   <option
-                    // defaultValue={`${isFeatured}`}
+                    defaultValue={`${product.isFeatured}`}
                     selected
                     hidden
                     className="capitalize"
                   >
-                    {/* {`${isFeatured}`} */}
+                    {`${product.isFeatured}`}
                   </option>
                   <option value="false">False</option>
                   <option value="true">True</option>

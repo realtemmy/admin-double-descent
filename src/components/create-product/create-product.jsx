@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { createdProduct } from "../../redux/slices/product/productSlice";
 import {
   Button,
   Input,
@@ -10,16 +9,12 @@ import {
   Textarea,
 } from "@material-tailwind/react";
 import Loader from "../loader/Loader";
-
-// import "./create-product.scss";
+import axiosService from "../../axios";
 
 const CreateProduct = () => {
-  const dispatch = useDispatch();
-  const categories = useSelector((state) => state.category.categories);
-  const [sections, setSections] = useState([]);
+  const queryClient = useQueryClient();
+  // const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // category, createdAt, description, isFeatured, name, price, section, image
   const defaultProductField = {
     name: "",
     price: "",
@@ -27,11 +22,36 @@ const CreateProduct = () => {
     brand: "",
   };
   const [image, setImage] = useState();
-  const [isFeatured, setIsFeatured] = useState("")
+  const [isFeatured, setIsFeatured] = useState("");
   const [category, setCategory] = useState("");
   const [section, setSection] = useState("");
   const [product, setProduct] = useState(defaultProductField);
   const { name, description, price, brand } = product;
+
+  const {
+    data: categories = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await axiosService.get("/category");
+      return response.data;
+    },
+  });
+
+  const {
+    data: sections = [],
+    isLoading: secLoading,
+    secError,
+  } = useQuery({
+    queryKey: ["sections", category],
+    queryFn: async () => {
+      const response = await axiosService.get(`/category/${category}/section`);
+      return response.data;
+    },
+    enabled: !!category,
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,19 +65,17 @@ const CreateProduct = () => {
     );
     const { data, status } = await res.json();
     if (status === "success") {
-      setSections(data);
+      // setSections(data);
     }
   };
 
   const handleChangeCall = (e) => {
-    setCategory(e)
+    setCategory(e);
     getSectionsFromCategory(e);
   };
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // return console.log(product, category, section, image);
-    try {
-      setLoading(true)
+
+  const mutation = useMutation({
+    mutationFn: async () => {
       const formData = new FormData();
       formData.append("image", image);
       formData.append("name", product.name);
@@ -67,43 +85,48 @@ const CreateProduct = () => {
       formData.append("description", product.description);
       formData.append("isFeatured", isFeatured);
       formData.append("brand", product.brand);
-      const res = await fetch(`${process.env.REACT_APP_SERVER_HOST}/products`, {
-        method: "POST",
+      const response = await axiosService.post("/products", formData, {
         headers: {
-          Authorization: "Bearer " + localStorage.getItem("admin-token"),
+          "Content-Type": "multipart/form-data",
         },
-        body: formData,
       });
-      const data = await res.json();
-      if (data.status === "success") {
-        // update redux store
-        dispatch(createdProduct(data.data));
-        toast.success("Product successfully created.");
-      } else {
-        toast.error(data.message);
-      }
-      console.log(data);
-    } catch (error) {
+      console.log(response);
+      
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["products"]);
+      toast.success("Product created successfully.");
+      setProduct({ name: "", price: "", description: "", brand: "" });
+      setImage(null);
+      setCategory("");
+      setSection("");
+      setIsFeatured("");
+    },
+    onError: (error) => {
+      toast.error(error.message || "There was a problem creating product.");
       console.log(error);
-      toast.error(error.message);
-    }finally{
-      setLoading(false);
-    }
+    },
+  });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    mutation.mutate();
   };
-  // name, brand, price, desc
-  // category, section, isFeatured, image
 
-  // console.log(categories);
-
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    return <div>There was an error fetching categories.</div>;
+  }
   return (
     <div>
-      {loading && <Loader />}
+      {(isLoading || mutation.isPaused) && <Loader />}
       <div className="mt-10">
         <form
           className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
           onSubmit={handleSubmit}
         >
-          {/* Add text gradient here for title? */}
           <h4 className="text-xl font-bold text-center uppercase text-slate-600 mb-4">
             Create Product
           </h4>
@@ -159,6 +182,16 @@ const CreateProduct = () => {
                   required
                   onChange={(e) => setImage(e.target.files[0])}
                 />
+                {image && (
+                  <div>
+                    <img
+                      src={URL.createObjectURL(image)}
+                      alt="preview"
+                      className="h-16 w-20 object-cover rounded"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
               </div>
               <div>
                 <div className="mb-4">

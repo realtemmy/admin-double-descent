@@ -31,7 +31,7 @@ const Sections = () => {
     onSuccess: (secId) => {
       queryClient.setQueryData(["sections"], (oldData) => {
         if (Array.isArray(oldData)) {
-          return oldData.filter((section) => section.id !== secId);
+          return oldData.filter((section) => section._id !== secId);
         }
         return oldData;
       });
@@ -43,16 +43,17 @@ const Sections = () => {
     },
   });
 
-  const { isLoading, error, data } = useQuery({
+  const {
+    isLoading,
+    error,
+    data: sections,
+  } = useQuery({
     queryKey: ["sections"],
     queryFn: async () => {
-      const response = await fetch(`http://localhost:5000/api/v1/sections`);
-      return response.json();
+      const response = await axiosService.get("/sections");
+      return response.data;
     },
   });
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
 
   const handleSectionEdit = (sectionId) => {
     navigate(`/sections/edit-section/${sectionId}`);
@@ -61,9 +62,7 @@ const Sections = () => {
   const deleteSection = async () => {
     setLoading(true);
     try {
-      await axiosService.delete(
-        `/sections/${secId}`
-      );
+      await axiosService.delete(`/sections/${secId}`);
     } catch (error) {
       throw new Error(error.message);
     } finally {
@@ -81,7 +80,10 @@ const Sections = () => {
     setSecId(sectionId);
   };
 
-  if (data.data.length < 1) {
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  if (sections.length < 1) {
     return (
       <div className="flex items-center h-full justify-center gap-4">
         <h3 className="text-lg font-bold">
@@ -106,7 +108,7 @@ const Sections = () => {
           Are you sure you want to delete section?
         </DialogHeader>
         <DialogBody>
-          Deleting section will delete all products available under section
+          Deleting this section will delete all products available under section
         </DialogBody>
         <DialogFooter>
           <Button
@@ -138,25 +140,25 @@ const Sections = () => {
         </div>
         <div className="content">
           <header className="grid grid-cols-3">
-            <div className="col-5">Section name</div>
-            <div className="col-5">Category</div>
+            <div className="col-5 font-medium text-xl">Section name</div>
+            <div className="col-5 font-medium text-xl">Category</div>
           </header>
-          {data.data.map((section, idx) => (
-            <section className="grid grid-cols-3" key={idx}>
+          {sections.map((section, idx) => (
+            <section className="grid grid-cols-3 my-2 items-center" key={idx}>
               <div className="col-5 capitalize">{section.name}</div>
               <div className="col-5 capitalize">{section.category.name}</div>
-              <div className="col-2 icons">
+              <div className="col-2 flex gap-2">
                 <div
-                  className="edit"
+                  className=""
                   onClick={() => handleSectionEdit(section._id)}
                 >
-                  <i className="fa fa-edit"></i>
+                  <i className="fa fa-edit text-orange-500"></i>
                 </div>
                 <div
                   className="delete"
                   onClick={() => handleDeleteCall(section._id)}
                 >
-                  <i className="fa fa-trash"></i>
+                  <i className="fa fa-trash text-red-500"></i>
                 </div>
               </div>
             </section>
