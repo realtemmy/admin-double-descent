@@ -1,3 +1,4 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Tabs,
   TabsHeader,
@@ -11,15 +12,15 @@ import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 // import { MediumLoader } from "../../components/loader/Loader";
 import Loader from "../../components/loader/Loader";
+import axiosService from "./../../axios";
 
-// types of order: delivered, pending, cancelled, paid
+import { commaSeparatedPrice } from "../../helperFunctions";
 
 const Order = () => {
-  const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("all");
-  const [loader, setLoader] = useState(false);
   // const [miniLoader, setMiniLoader] = useState(false);
-  const [orders, setOrders] = useState([]);
+  // const [orders, setOrders] = useState([]);
 
   const data = [
     {
@@ -28,7 +29,7 @@ const Order = () => {
     },
     {
       label: "Pending Orders",
-      value: "pending",
+      value: "confirmed",
     },
     {
       label: "Booked Orders",
@@ -44,73 +45,50 @@ const Order = () => {
     },
   ];
 
-  // useEffect(() => {
-  //   toast("Displaying content");
-  // }, []);
-
-  useEffect(() => {
-    const getAllOrders = async () => {
-      setLoader(true);
-      try {
-        const res = await (
-          await fetch(
-            `${process.env.REACT_APP_SERVER_HOST}/order?type=${
-              activeTab === "all" ? "" : activeTab
-            }`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("admin-token")}`,
-              },
-            }
-          )
-        ).json();
-        setOrders(res.data);
-        // console.log(res.data);
-      } catch (error) {
-        toast.error(error.message);
-        console.log(error);
-      } finally {
-        setLoader(false);
-      }
-    };
-    getAllOrders();
-  }, [activeTab]);
-
-  const handleConfirmOrder = async (id) => {
-    console.log(id);
-    try {
-      setLoader(true);
-      const res = await fetch(
-        `${process.env.REACT_APP_SERVER_HOST}/order/user/${id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-type": "application/json",
-            Authorization: "Bearer " + localStorage.getItem("admin-token"),
-          },
-          body: JSON.stringify({ status: "pending" }),
-        }
+  const {
+    isLoading,
+    data: orders,
+    error,
+  } = useQuery({
+    queryKey: ["orders", activeTab],
+    queryFn: async () => {
+      const response = await axiosService.get(
+        `/order?type=${activeTab === "all" ? "" : activeTab}`
       );
-      const response = await res.json();
-      console.log(response);
-      if (response.status === "success") {
-        // dispatch(updateOrder(response.data));
-        toast.success("Order confirmation successful!");
-      } else {
-        toast.error(response.message || "There was a problem confirming order");
-      }
-    } catch (error) {
-      toast.error(error.message);
-      // console.log(error);
-    } finally {
-      setLoader(false);
-    }
+      return response.data;
+    },
+  });
+
+  const mutateOrderStatus = useMutation({
+    mutationFn: async (orderId) => {
+      await axiosService.patch(`/order/user/${orderId}`, {
+        status: "confirmed",
+      });
+    },
+    onSuccess: () => {
+      toast.success("Order confirmed successfully");
+      queryClient.invalidateQueries(["orders"]);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to comfirm order. ");
+      console.error(error);
+    },
+  });
+
+  const handleConfirmOrder = (orderId) => {
+    mutateOrderStatus.mutate(orderId);
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <>
-      {loader && <Loader />}
+      {mutateOrderStatus.isLoading && <Loader />}
       <div className="flex">
         <h2 className="text-slate-600 text-2xl font-bold">Orders:</h2>
         {/* <Tabs value="html" className="max-w-[10rem]">
@@ -173,7 +151,9 @@ const Order = () => {
                 alt="img"
                 className="w-44"
               />
-              <Button>Oops! No order available here, yet.</Button>
+              <Button className="hover:bg-blue-gray-900">
+                Oops! No order available here, yet.
+              </Button>
             </div>
           ) : (
             <div className="[&>*:nth-child(even)]:bg-teal-50 [&>*:nth-child(odd)]:bg-teal-100">
@@ -192,20 +172,22 @@ const Order = () => {
                   <p className="col-span-1 text-sm">
                     {new Date(order.createdAt).toDateString()}
                   </p>
-                  <p className="col-span-1">&#x20A6;{order.totalAmount}</p>
+                  <p className="col-span-1">
+                    &#x20A6;{commaSeparatedPrice(order.totalAmount)}
+                  </p>
                   <p className="col-span-1">
                     {order.status === "paid" ? (
                       <Button
                         color="green"
                         size="sm"
-                        className="px-3 self-center"
+                        className="px-3 self-center hover:bg-green-400"
                         onClick={() => handleConfirmOrder(order._id)}
                       >
                         <span className="text-xs">Confirm order</span>
                       </Button>
                     ) : order.status === "pending" ? (
                       <span className="text-sm capitalize font-semibold">
-                        {order.status}{" "}
+                        {order.status}
                         <i className="fas fa-shipping-fast text-blue-500"></i>
                       </span>
                     ) : order.status === "delivered" ? (
