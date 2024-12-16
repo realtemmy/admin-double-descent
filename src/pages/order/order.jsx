@@ -61,7 +61,7 @@ const Order = () => {
 
   const mutateOrderStatus = useMutation({
     mutationFn: async (orderId) => {
-      await axiosService.patch(`/order/user/${orderId}`, {
+      await axiosService.patch(`/order/${orderId}/confirm`, {
         status: "confirmed",
       });
     },
